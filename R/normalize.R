@@ -17,6 +17,10 @@ normalize_factor_loadings <- function(factor_df, method){
     stop('normalization_method must be raw, demean, exp_normalized or percent')
   }
 
+  if(!is.null(attr(factor_df, 'normalization')) && attr(factor_df, 'normalization') != 'raw') {
+    stop('factor_df has already been normalized')
+  }
+
   grouping_regex <- '(item|user)\\_id'
 
   if(method == 'raw')  {
