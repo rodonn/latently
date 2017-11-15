@@ -1,0 +1,13 @@
+Package: latently
+Type: Package
+Title: Latently
+Version: 0.1.0
+Authors@R: person("Tobias", "Schmidt", email = "royalts@gmail.com", 
+  role = c("aut", "cre"))
+Description: A collection of functions to visualize latent factors
+License: Proprietary
+Encoding: UTF-8
+LazyData: true
+Imports: dplyr,
+    tidyr
+RoxygenNote: 6.0.1
