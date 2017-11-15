@@ -9,6 +9,6 @@ get_top_bottom_ntile_by_factor <- function(factor_df, ntiles) {
     mutate(loading_ntile = dplyr::ntile(loading, ntiles)) %>%
     ungroup %>%
     filter(loading_ntile %in% c(1, ntiles)) %>%
-    mutate(top_ntile = loading_ntile == max(loadings_ntile)) %>%
+    mutate(top_ntile = loading_ntile == max(loading_ntile)) %>%
     mutate(bottom_ntile = loading_ntile == 1)
 }
