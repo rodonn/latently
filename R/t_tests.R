@@ -5,17 +5,17 @@
 #'
 #' @param factor_df a data.frame in long format with at least three columns: "item_id", "factor" and "loading"
 #' @param covariate_df a data.frame with covariates that will join against factor_df on item_id
-#' @param include_covariates character vector of covariate names to perform the t-tests within
+#' @param covariates character vector of covariate names to perform the t-tests within
 #' @param ntiles how many ntiles to split the factor loadings into
 #' @export
-t_test_heatmap <- function(factor_df, covariate_df, include_covariates, ntiles = 10) {
+t_test_heatmap <- function(factor_df, covariate_df, covariates, ntiles = 10) {
   # split the items into ntiles, then throw away everything but the top and bottom ntile
   factor_df %>%
     get_top_bottom_ntile_by_factor(ntiles) -> items_top_bottom
 
   # take the covariates from the covariate data.frame, then recast to long
   item_covariates %>%
-    select(one_of(c('item_id', include_covariates))) %>%
+    select(one_of(c('item_id', covariates))) %>%
     tidyr::gather(covariate, value, -item_id) -> item_covariates_long
 
   # join factor loadings and covariates, then perform t-tests for differences
