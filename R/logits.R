@@ -29,14 +29,14 @@ logit_heatmap <- function(factor_df, covariate_df, covariates, ntiles = 10) {
   # plot the result of the above logits as a heatmap
   logit_results %>%
     filter(term != '(Intercept)') %>%
-    ggplot(aes(factor_id, term, fill = statistic)) +
+    ggplot(aes(factor_id, term, fill = abs(statistic))) +
     geom_tile() +
     xlab('latent factor #') + ylab('') +
     labs(title = paste0("difference in mean between top and bottom ",
                         ntile_name(ntiles),
                         ",\n shaded by z-statistic")) +
     theme(plot.title = element_text(hjust = 0.5)) +
-    scale_fill_viridis_c(name = 'z-statistic') +
+    scale_fill_viridis_c(name = 'abs(z-statistic)') +
     geom_text(aes(label = round(estimate, 2)), color = 'white', size = 2) +
     coord_cartesian(xlim = c(1, n_factors))
 }

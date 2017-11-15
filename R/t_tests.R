@@ -31,14 +31,14 @@ t_test_heatmap <- function(factor_df, covariate_df, covariates, ntiles = 10) {
 
   # plot the result of the above tests as a heatmap
   t_tests %>%
-    ggplot(aes(factor_id, covariate, fill = statistic)) +
+    ggplot(aes(factor_id, covariate, fill = abs(statistic))) +
     geom_tile() +
     xlab('latent factor #') + ylab('') +
     labs(title = paste0("difference in mean between top and bottom ",
                         ntile_name(ntiles),
-                        ",\n shaded by t-statistc")) +
+                        ",\n shaded by abs(t-statistic)")) +
     theme(plot.title = element_text(hjust = 0.5)) +
-    scale_fill_viridis_c(name = 't-statistic') +
+    scale_fill_viridis_c(name = 'abs(t-statistic)') +
     geom_text(aes(label = round(estimate, 2)), color = 'white', size = 2) +
     coord_cartesian(xlim = c(1, n_factors))
 }
