@@ -11,12 +11,7 @@
 t_test_heatmap <- function(factor_df, covariate_df, include_covariates, ntiles = 10) {
   # split the items into ntiles, then throw away everything but the top and bottom ntile
   factor_df %>%
-    group_by(factor_id) %>%
-    mutate(loading_ntile = dplyr::ntile(loading, ntiles)) %>%
-    ungroup %>%
-    filter(loading_ntile %in% c(1, ntiles)) %>%
-    mutate(top_ntile = loading_ntile == max(loadings_ntile)) %>%
-    mutate(bottom_ntile = loading_ntile == 1) -> items_top_bottom
+    get_top_bottom_ntile_by_factor(ntiles) -> items_top_bottom
 
   # take the covariates from the covariate data.frame, then recast to long
   item_covariates %>%
