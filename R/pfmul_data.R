@@ -9,7 +9,7 @@
 read_pfmul_parameter_file <- function(parameter_name, moment = 'mean', data_dir, shape = 'long') {
   # read in the tsv file
   file_name <- paste0('param_', parameter_name, '_', moment, '.tsv')
-  parameter_wide <- fread(file.path(data_dir, file_name))
+  parameter_wide <- data.table::fread(file.path(data_dir, file_name))
 
   # set column names
   unit_id_name <- ifelse(parameter_name %in% c('alpha', 'beta'), 'item_id', 'user_id')
