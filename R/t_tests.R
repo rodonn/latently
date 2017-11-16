@@ -9,6 +9,37 @@
 #' @param ntiles how many ntiles to split the factor loadings into
 #' @export
 t_test_heatmap <- function(factor_df, covariate_df, covariates, ntiles = 10) {
+  Call <- sys.call()
+  Call[[1]] <- perform_t_tests
+  t_test_results <- eval(Call, parent.frame())
+
+  n_factors <- length(unique(t_test_results$factor_id))
+
+  # plot the result of the above tests as a heatmap
+  t_test_results %>%
+    ggplot(aes(factor_id, covariate, fill = statistic)) +
+    geom_tile() +
+    xlab('latent factor #') + ylab('') +
+    labs(caption = paste0("difference in mean between top and bottom ",
+                          ntile_name(ntiles),
+                          ",\n test statistic as text, shaded by t-statistic")) +
+    scale_fill_distiller(palette = "RdBu",
+                         limits = c(-1,1) * max(abs(t_test_results$statistic)),
+                         name = 't-statistic') +
+    geom_text(aes(label = round(estimate, 2)), color = 'white', size = 2) +
+    coord_cartesian(xlim = c(1, n_factors))
+}
+
+#' t-test for differences in covariates
+#'
+#' Performs the t-tests for t_test_heatmap
+#'
+#' @param factor_df a data.frame in long format with at least three columns: "item_id", "factor" and "loading"
+#' @param covariate_df a data.frame with covariates that will join against factor_df on item_id
+#' @param covariates character vector of covariate names to perform the t-tests within
+#' @param ntiles how many ntiles to split the factor loadings into
+#'
+perform_t_tests <- function(factor_df, covariate_df, covariates, ntiles) {
   # split the items into ntiles, then throw away everything but the top and bottom ntile
   factor_df %>%
     get_top_bottom_ntile_by_factor(ntiles) -> items_top_bottom
@@ -33,21 +64,7 @@ t_test_heatmap <- function(factor_df, covariate_df, covariates, ntiles = 10) {
     filter(length(unique(value)) > 1) %>%
     # estimates are top ntile - bottom ntile
     do(broom::tidy(t.test(value ~ bottom_ntile, data = .))) %>%
-    ungroup -> t_tests
+    ungroup -> t_test_results
 
-  n_factors <- length(unique(factor_df$factor_id))
-
-  # plot the result of the above tests as a heatmap
-  t_test_results %>%
-    ggplot(aes(factor_id, covariate, fill = statistic)) +
-    geom_tile() +
-    xlab('latent factor #') + ylab('') +
-    labs(caption = paste0("difference in mean between top and bottom ",
-                          ntile_name(ntiles),
-                          ",\n test statistic as text, shaded by t-statistic")) +
-    scale_fill_distiller(palette = "RdBu",
-                         limits = c(-1,1) * max(abs(t_tests$statistic)),
-                         name = 't-statistic') +
-    geom_text(aes(label = round(estimate, 2)), color = 'white', size = 2) +
-    coord_cartesian(xlim = c(1, n_factors))
+  t_test_results
 }
