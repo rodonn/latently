@@ -34,3 +34,32 @@ read_pfmul_parameter_file <- function(parameter_name, moment = 'mean', data_dir,
 factor_label_to_id <- function(factor_label) {
   as.integer(stringr::str_replace(factor_label, 'factor_', ''))
 }
+
+
+#' Extracts the distance coefficients from the PFMUL output
+#'
+#' @param data_dir the directory in which the parameter tsv files reside
+#' @param shape "matrix" if the raw user x item coefficient matrix should be returned, "long" if the coefficients are to be returned as a tidy (long) data.frame
+#'
+#' @export
+#'
+get_distance_coefficients <- function(data_dir, shape = 'long') {
+  # read in the item and user loadings on the distance factors
+  item_distance_wide <- read_pfmul_parameter_file('beta', 'mean', data_dir, shape = 'wide')
+  user_distance_wide <- read_pfmul_parameter_file('gamma', 'mean', data_dir, shape = 'wide')
+
+  # compute the matrix of distance coefficients as the inner product of the item and user loading matrixes
+  distance_coefficient_matrix <- as.matrix(user_distance_wide[, c(-1)]) %*% t(as.matrix(item_distance_wide[, c(-1)]))
+
+  if(shape == 'matrix') {
+    distance_coefficient_matrix
+  } else {
+    distance_coefficients <- as.data.frame(distance_coefficient_matrix)
+    colnames(distance_coefficients) <- item_distance_wide$item_id
+    distance_coefficients$user_id <- user_distance_wide$user_id
+    distance_coefficients %>%
+      tidyr::gather(item_id, coefficient, -user_id) -> distance_coefficients_long
+
+    distance_coefficients_long
+  }
+}
