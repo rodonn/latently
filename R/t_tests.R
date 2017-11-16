@@ -17,17 +17,17 @@ t_test_heatmap <- function(factor_df, covariate_df, covariates, ntiles = 10) {
 
   # plot the result of the above tests as a heatmap
   t_test_results %>%
-    ggplot(aes(factor_id, covariate, fill = statistic)) +
-    geom_tile() +
-    xlab('latent factor #') + ylab('') +
-    labs(caption = paste0("difference in mean between top and bottom ",
+    ggplot2::ggplot(aes(factor_id, covariate, fill = statistic)) +
+    ggplot2::geom_tile() +
+    ggplot2::xlab('latent factor #') + ylab('') +
+    ggplot2::labs(caption = paste0("difference in mean between top and bottom ",
                           ntile_name(ntiles),
                           ",\n test statistic as text, shaded by t-statistic")) +
-    scale_fill_distiller(palette = "RdBu",
+    ggplot2::scale_fill_distiller(palette = "RdBu",
                          limits = c(-1,1) * max(abs(t_test_results$statistic)),
                          name = 't-statistic') +
-    geom_text(aes(label = round(estimate, 2)), color = 'white', size = 2) +
-    coord_cartesian(xlim = c(1, n_factors))
+    ggplot2::geom_text(aes(label = round(estimate, 2)), color = 'white', size = 2) +
+    ggplot2::coord_cartesian(xlim = c(1, n_factors))
 }
 
 #' t-test for differences in covariates
