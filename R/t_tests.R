@@ -25,7 +25,8 @@ t_test_heatmap <- function(factor_df, covariate_df, covariates, ntiles = 10) {
                           ",\n test statistic as text, shaded by t-statistic")) +
     ggplot2::scale_fill_distiller(palette = "RdBu",
                          limits = c(-1,1) * max(abs(t_test_results$statistic)),
-                         name = 't-statistic') +
+                         name = 't-statistic',
+                         direction = -1) +
     ggplot2::geom_text(aes(label = round(estimate, 2)), color = 'white', size = 2) +
     ggplot2::coord_cartesian(xlim = c(1, n_factors))
 }
