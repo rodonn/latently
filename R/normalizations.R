@@ -2,7 +2,7 @@
 #'
 #' Normalize factor loadings using different methods
 #'
-#' @param factor_df a data.frame in long format with at least three columns: "user_id" or "item_id", "factor" and "loading"
+#' @param factor_df a data.frame in long format with at least three columns: "user_id" or "item_id", "factor_id" and "loading"
 #' @param method the normalization method. Possible options:
 #' - raw
 #' - demean
@@ -12,7 +12,7 @@
 #' @export
 #'
 normalize_factor_loadings <- function(factor_df, method){
-  valid_methods <- c('raw', 'demean','exp', 'percent')
+  valid_methods <- c('raw', 'demean', 'exp', 'percent')
   if(!(method %in% valid_methods)) {
     stop('normalization_method must be raw, demean, exp_normalized or percent')
   }
