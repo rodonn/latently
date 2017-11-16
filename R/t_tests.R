@@ -44,7 +44,7 @@ t_test_heatmap <- function(factor_df, covariate_df, covariates, ntiles = 10) {
 perform_t_tests <- function(factor_df, covariate_df, covariates, ntiles) {
   # split the items into ntiles, then throw away everything but the top and bottom ntile
   factor_df %>%
-    get_top_bottom_ntile_by_factor(ntiles) -> items_top_bottom
+    chop_off_top_bottom_loading_ntiles_by_factor(ntiles) -> items_top_bottom
 
   # take any factor variables among the covariates and one-hot-encode them
   covariate_formula <- as.formula(paste0('~ ', paste(covariates, collapse = '+'), ' -1'))

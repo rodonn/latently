@@ -44,7 +44,7 @@ logit_heatmap <- function(factor_df, covariate_df, covariates, ntiles = 10) {
 run_logits <- function(factor_df, covariate_df, covariates, ntiles) {
   # split the items into ntiles, then throw away everything but the top and bottom ntile
   factor_df %>%
-    get_top_bottom_ntile_by_factor(ntiles) -> items_top_bottom
+    chop_off_top_bottom_loading_ntiles_by_factor(ntiles) -> items_top_bottom
 
   # join factor loadings and covariates, then perform logits for membership in the top ntile
   logit_formula <- as.formula(paste0('top_ntile ~ ', paste(covariates, collapse = ' + ')))
