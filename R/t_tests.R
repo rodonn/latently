@@ -29,6 +29,8 @@ t_test_heatmap <- function(factor_df, covariate_df, covariates, ntiles = 10) {
   items_top_bottom %>%
     left_join(item_covariates_long, by='item_id') %>%
     group_by(factor_id, covariate) %>%
+    # kick out cells where there's no variation in the covariates
+    filter(length(unique(value)) > 1) %>%
     # estimates are top ntile - bottom ntile
     do(broom::tidy(t.test(value ~ bottom_ntile, data = .))) %>%
     ungroup -> t_tests
