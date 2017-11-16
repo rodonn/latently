@@ -58,7 +58,8 @@ get_distance_coefficients <- function(data_dir, shape = 'long') {
     colnames(distance_coefficients) <- item_distance_wide$item_id
     distance_coefficients$user_id <- user_distance_wide$user_id
     distance_coefficients %>%
-      tidyr::gather(item_id, coefficient, -user_id) -> distance_coefficients_long
+      tidyr::gather(item_id, coefficient, -user_id) %>%
+      mutate(item_id = as.integer(item_id)) -> distance_coefficients_long
 
     distance_coefficients_long
   }
