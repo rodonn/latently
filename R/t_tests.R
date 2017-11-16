@@ -42,10 +42,9 @@ t_test_heatmap <- function(factor_df, covariate_df, covariates, ntiles = 10) {
     ggplot(aes(factor_id, covariate, fill = statistic)) +
     geom_tile() +
     xlab('latent factor #') + ylab('') +
-    labs(title = paste0("difference in mean between top and bottom ",
-                        ntile_name(ntiles),
-                        ",\n shaded by abs(t-statistic)")) +
-    theme(plot.title = element_text(hjust = 0.5)) +
+    labs(caption = paste0("difference in mean between top and bottom ",
+                          ntile_name(ntiles),
+                          ",\n test statistic as text, shaded by t-statistic")) +
     scale_fill_distiller(palette = "RdBu",
                          limits = c(-1,1) * max(abs(t_tests$statistic)),
                          name = 't-statistic') +
