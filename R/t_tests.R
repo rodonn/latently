@@ -9,6 +9,7 @@
 #' @param ntiles how many ntiles to split the factor loadings into
 #' @export
 t_test_heatmap <- function(factor_df, covariate_df, covariates, ntiles = 10) {
+  # call t_test_results() with the same arguments the current function was called with
   Call <- sys.call()
   Call[[1]] <- perform_t_tests
   t_test_results <- eval(Call, parent.frame())
