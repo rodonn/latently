@@ -38,15 +38,17 @@ t_test_heatmap <- function(factor_df, covariate_df, covariates, ntiles = 10) {
   n_factors <- length(unique(factor_df$factor_id))
 
   # plot the result of the above tests as a heatmap
-  t_tests %>%
-    ggplot(aes(factor_id, covariate, fill = abs(statistic))) +
+  t_test_results %>%
+    ggplot(aes(factor_id, covariate, fill = statistic)) +
     geom_tile() +
     xlab('latent factor #') + ylab('') +
     labs(title = paste0("difference in mean between top and bottom ",
                         ntile_name(ntiles),
                         ",\n shaded by abs(t-statistic)")) +
     theme(plot.title = element_text(hjust = 0.5)) +
-    scale_fill_viridis_c(name = 'abs(t-statistic)') +
+    scale_fill_distiller(palette = "RdBu",
+                         limits = c(-1,1) * max(abs(t_tests$statistic)),
+                         name = 't-statistic') +
     geom_text(aes(label = round(estimate, 2)), color = 'white', size = 2) +
     coord_cartesian(xlim = c(1, n_factors))
 }
