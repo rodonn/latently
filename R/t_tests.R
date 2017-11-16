@@ -9,7 +9,7 @@
 #' @param ntiles how many ntiles to split the factor loadings into
 #' @export
 t_test_heatmap <- function(factor_df, covariate_df, covariates, ntiles = 10) {
-  # call t_test_results() with the same arguments the current function was called with
+  # call perform_t_tests() with the same arguments the current function was called with
   Call <- sys.call()
   Call[[1]] <- perform_t_tests
   t_test_results <- eval(Call, parent.frame())
@@ -22,8 +22,8 @@ t_test_heatmap <- function(factor_df, covariate_df, covariates, ntiles = 10) {
     ggplot2::geom_tile() +
     ggplot2::xlab('latent factor #') + ylab('') +
     ggplot2::labs(caption = paste0("difference in mean between top and bottom ",
-                          ntile_name(ntiles),
-                          ",\n test statistic as text, shaded by t-statistic")) +
+                                    ntile_name(ntiles),
+                                    ",\n test statistic as text, shaded by t-statistic")) +
     ggplot2::scale_fill_distiller(palette = "RdBu",
                          limits = c(-1,1) * max(abs(t_test_results$statistic)),
                          name = 't-statistic',
