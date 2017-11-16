@@ -3,6 +3,7 @@
 export(frequency_normalize_pfmul_loadings)
 export(logit_heatmap)
 export(normalize_factor_loadings)
+export(read_pfmul_parameter_file)
 export(t_test_heatmap)
 export(top_n_table)
 export(user_normalize_pfmul_loadings)
