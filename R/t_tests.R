@@ -13,9 +13,15 @@ t_test_heatmap <- function(factor_df, covariate_df, covariates, ntiles = 10) {
   factor_df %>%
     get_top_bottom_ntile_by_factor(ntiles) -> items_top_bottom
 
+  # take any factor variables among the covariates and one-hot-encode them
+  covariate_formula <- as.formula(paste0('~ ', paste(covariates, collapse = '+'), ' -1'))
+  covariate_df %>%
+    model.matrix(covariate_formula, .) %>%
+    as.data.frame() %>%
+    dplyr::bind_cols(covariate_df %>% select(item_id), .) -> covariate_mm
+
   # take the covariates from the covariate data.frame, then recast to long
-  item_covariates %>%
-    select(one_of(c('item_id', covariates))) %>%
+  covariate_mm %>%
     tidyr::gather(covariate, value, -item_id) -> item_covariates_long
 
   # join factor loadings and covariates, then perform t-tests for differences
