@@ -26,6 +26,7 @@ read_pfmul_parameter_file <- function(parameter_name, moment = 'mean', data_dir,
   }
 }
 
+
 #' strip a robust factor label to its id
 #'
 #' @param factor_label a character vector of robust factor labels, e.g. "factor_05"
