@@ -4,12 +4,12 @@
 \alias{user_normalize_pfmul_loadings}
 \title{Normalize PFMUL factor loadings by total user loadings}
 \usage{
-user_normalize_pfmul_loadings(factor_df, user_factor_df)
+user_normalize_pfmul_loadings(factor_df, normalize_by_factor_df)
 }
 \arguments{
 \item{factor_df}{a data.frame in long format with at least three columns: "user_id" or "item_id", "factor_id" and "loading"}
 
-\item{user_factor_df}{the data.frame of _user_ factor loadings in long format. Must have columns user_id, factor_id and "loading"}
+\item{normalize_by_factor_df}{the data.frame of factor loadings to normalize by in long format. Must have columns "user_id" or "item_id", "factor_id" and "loading"}
 }
 \description{
 Normalize PFMUL factor loadings by total user loadings
