@@ -47,17 +47,32 @@ run_logits <- function(factor_df, covariate_df, covariates, ntiles) {
     chop_off_top_bottom_loading_ntiles_by_factor(ntiles) -> items_top_bottom
 
   # join factor loadings and covariates, then perform logits for membership in the top ntile
-  logit_formula <- as.formula(paste0('top_ntile ~ ', paste(covariates, collapse = ' + ')))
-
   items_top_bottom %>%
     left_join(covariate_df, by='item_id') %>%
     group_by(factor_id) %>%
     # estimates are top ntile - bottom ntile
-    do(broom::tidy(glm(logit_formula,
-                       data = .,
-                       family = binomial(link = logit)))) %>%
+    do(logit_predict_top_ntile(.data, covariates)) %>%
     ungroup -> logit_results
 
   logit_results
+}
+
+#' Predict membership in the top ntile
+#'
+#' Predict membership in the top ntile given a set of covariates
+#'
+#' @param df a data.frame that must contain both a "top_ntile" variable and all covariates
+#' @param covariates character vector of variable names
+#'
+#' @export
+#'
+logit_predict_top_ntile <- function(df, covariates) {
+  logit_formula <- as.formula(paste0('top_ntile ~ ', paste(covariates, collapse = ' + ')))
+
+  logit_estimates <- glm(logit_formula,
+                         data = df,
+                         family = binomial(link = logit))
+
+  broom::tidy(logit_estimates)
 }
 
