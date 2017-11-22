@@ -14,7 +14,7 @@ top_n_table <- function(factor_df, covariate_df, include_columns = NULL, n = 10)
     left_join(covariate_df, by='item_id') %>%
     arrange(factor_id, desc(loading)) %>%
     group_by(factor_id) %>%
-    top_n(10, loading) %>%
+    top_n(n, loading) %>%
     ungroup %>%
     select(one_of(c('factor_id', 'loading', include_columns)))
 }
