@@ -11,7 +11,7 @@
 #'
 top_n_table <- function(factor_df, covariate_df, include_columns = NULL, n = 10) {
   factor_df %>%
-    left_join(covariate_df, by='item_id') %>%
+    left_join(covariate_df, by = 'item_id') %>%
     arrange(factor_id, desc(loading)) %>%
     group_by(factor_id) %>%
     top_n(n, loading) %>%
