@@ -4,7 +4,7 @@
 \alias{get_distance_coefficients}
 \title{Extracts the distance coefficients from the PFMUL output}
 \usage{
-get_distance_coefficients(data_dir, shape = "long")
+get_distance_coefficients(data_dir, iteration = NULL, shape = "long")
 }
 \arguments{
 \item{data_dir}{the directory in which the parameter tsv files reside}

@@ -5,7 +5,7 @@
 \title{Read in PFMUL parameter file}
 \usage{
 read_pfmul_parameter_file(parameter_name, moment = "mean", data_dir,
-  shape = "long")
+  iteration = NULL, shape = "long")
 }
 \arguments{
 \item{parameter_name}{the (character) name of the parameter to be read in, e.g. "alpha" for item factor loadings}
@@ -14,7 +14,9 @@ read_pfmul_parameter_file(parameter_name, moment = "mean", data_dir,
 
 \item{data_dir}{the directory in which the parameter tsv files reside}
 
-\item{shape}{whether to return the parameters in long or wide format}
+\item{iteration}{integer: the iteration at which to evaluate the parameters}
+
+\item{shape}{character: whether to return the parameters in 'long' or 'wide' format}
 }
 \description{
 Read in PFMUL parameter file

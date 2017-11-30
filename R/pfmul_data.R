@@ -3,12 +3,19 @@
 #' @param parameter_name the (character) name of the parameter to be read in, e.g. "alpha" for item factor loadings
 #' @param moment the moment of the parameter to be read in, either "mean" or "std"
 #' @param data_dir the directory in which the parameter tsv files reside
-#' @param shape whether to return the parameters in long or wide format
+#' @param iteration integer: the iteration at which to evaluate the parameters
+#' @param shape character: whether to return the parameters in 'long' or 'wide' format
 #'
 #' @export
-read_pfmul_parameter_file <- function(parameter_name, moment = 'mean', data_dir, shape = 'long') {
+read_pfmul_parameter_file <- function(parameter_name, moment = 'mean',
+                                      data_dir, iteration = NULL, shape = 'long') {
   # read in the tsv file
-  file_name <- paste0('param_', parameter_name, '_', moment, '.tsv')
+  if(!is.null(iteration)) {
+    iteration <- paste0('it', iteration)
+  }
+
+  file_name_components <- c('param', parameter_name, iteration, moment)
+  file_name <- paste0(paste(file_name_components, collapse = '_'), '.tsv')
   parameter_wide <- data.table::fread(file.path(data_dir, file_name))
 
   # set column names
@@ -39,14 +46,14 @@ factor_label_to_id <- function(factor_label) {
 #' Extracts the distance coefficients from the PFMUL output
 #'
 #' @param data_dir the directory in which the parameter tsv files reside
+#' @param iteration integer: the iteration at which to evaluate the parameters
 #' @param shape "matrix" if the raw user x item coefficient matrix should be returned, "long" if the coefficients are to be returned as a tidy (long) data.frame
-#'
 #' @export
 #'
-get_distance_coefficients <- function(data_dir, shape = 'long') {
+get_distance_coefficients <- function(data_dir, iteration = NULL, shape = 'long') {
   # read in the item and user loadings on the distance factors
-  item_distance_wide <- read_pfmul_parameter_file('beta', 'mean', data_dir, shape = 'wide')
-  user_distance_wide <- read_pfmul_parameter_file('gamma', 'mean', data_dir, shape = 'wide')
+  item_distance_wide <- read_pfmul_parameter_file('beta', 'mean', data_dir, iteration, shape = 'wide')
+  user_distance_wide <- read_pfmul_parameter_file('gamma', 'mean', data_dir, iteration, shape = 'wide')
 
   # compute the matrix of distance coefficients as the inner product of the item and user loading matrixes
   distance_coefficient_matrix <- as.matrix(user_distance_wide[, c(-1)]) %*% t(as.matrix(item_distance_wide[, c(-1)]))
