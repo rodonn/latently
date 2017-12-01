@@ -1,4 +1,4 @@
-#' Read in PFMUL parameter file
+#' Read in bemp parameter file
 #'
 #' @param parameter_name the (character) name of the parameter to be read in, e.g. "alpha" for item factor loadings
 #' @param moment the moment of the parameter to be read in, either "mean" or "std"
@@ -7,7 +7,7 @@
 #' @param shape character: whether to return the parameters in 'long' or 'wide' format
 #'
 #' @export
-read_pfmul_parameter_file <- function(parameter_name, moment = 'mean',
+read_bemp_parameter_file <- function(parameter_name, moment = 'mean',
                                       data_dir, iteration = NULL, shape = 'long') {
   # read in the tsv file
   if(!is.null(iteration)) {
@@ -43,7 +43,7 @@ factor_label_to_id <- function(factor_label) {
 }
 
 
-#' Extract utility components from the PFMUL output
+#' Extract utility components from the bemp output
 #'
 #' @param component character: either "latent_factors" or "distance"
 #' @param data_dir the directory in which the parameter tsv files reside
@@ -60,8 +60,8 @@ get_utility_components <- function(component, data_dir, iteration = NULL, shape 
     user_component_parameter_name <- 'gamma'
   }
   # read in the item and user loadings on the component factors
-  item_component_wide <- read_pfmul_parameter_file(item_component_parameter_name, 'mean', data_dir, iteration, shape = 'wide')
-  user_component_wide <- read_pfmul_parameter_file(user_component_parameter_name, 'mean', data_dir, iteration, shape = 'wide')
+  item_component_wide <- read_bemp_parameter_file(item_component_parameter_name, 'mean', data_dir, iteration, shape = 'wide')
+  user_component_wide <- read_bemp_parameter_file(user_component_parameter_name, 'mean', data_dir, iteration, shape = 'wide')
 
   # compute the matrix of utility coefficients as the inner product of the item and user loading matrixes
   utility_coefficient_matrix <- as.matrix(user_component_wide[, c(-1)]) %*% t(as.matrix(item_component_wide[, c(-1)]))
