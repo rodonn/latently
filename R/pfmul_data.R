@@ -43,31 +43,39 @@ factor_label_to_id <- function(factor_label) {
 }
 
 
-#' Extracts the distance coefficients from the PFMUL output
+#' Extract utility components from the PFMUL output
 #'
+#' @param component character: either "latent_factors" or "distance"
 #' @param data_dir the directory in which the parameter tsv files reside
 #' @param iteration integer: the iteration at which to evaluate the parameters
 #' @param shape "matrix" if the raw user x item coefficient matrix should be returned, "long" if the coefficients are to be returned as a tidy (long) data.frame
 #' @export
 #'
-get_distance_coefficients <- function(data_dir, iteration = NULL, shape = 'long') {
-  # read in the item and user loadings on the distance factors
-  item_distance_wide <- read_pfmul_parameter_file('beta', 'mean', data_dir, iteration, shape = 'wide')
-  user_distance_wide <- read_pfmul_parameter_file('gamma', 'mean', data_dir, iteration, shape = 'wide')
+get_utility_components <- function(component, data_dir, iteration = NULL, shape = 'long') {
+  if(component == 'latent_factors') {
+    item_component_parameter_name <- 'alpha'
+    user_component_parameter_name <- 'theta'
+  } else if(component == 'distance') {
+    item_component_parameter_name <- 'beta'
+    user_component_parameter_name <- 'gamma'
+  }
+  # read in the item and user loadings on the component factors
+  item_component_wide <- read_pfmul_parameter_file(item_component_parameter_name, 'mean', data_dir, iteration, shape = 'wide')
+  user_component_wide <- read_pfmul_parameter_file(user_component_parameter_name, 'mean', data_dir, iteration, shape = 'wide')
 
-  # compute the matrix of distance coefficients as the inner product of the item and user loading matrixes
-  distance_coefficient_matrix <- as.matrix(user_distance_wide[, c(-1)]) %*% t(as.matrix(item_distance_wide[, c(-1)]))
+  # compute the matrix of utility coefficients as the inner product of the item and user loading matrixes
+  utility_coefficient_matrix <- as.matrix(user_component_wide[, c(-1)]) %*% t(as.matrix(item_component_wide[, c(-1)]))
 
   if(shape == 'matrix') {
-    distance_coefficient_matrix
+    utility_coefficient_matrix
   } else {
-    distance_coefficients <- as.data.frame(distance_coefficient_matrix)
-    colnames(distance_coefficients) <- item_distance_wide$item_id
-    distance_coefficients$user_id <- user_distance_wide$user_id
-    distance_coefficients %>%
+    utility_coefficients <- as.data.frame(utility_coefficient_matrix)
+    colnames(utility_coefficients) <- item_component_wide$item_id
+    utility_coefficients$user_id <- user_component_wide$user_id
+    utility_coefficients %>%
       tidyr::gather(item_id, coefficient, -user_id) %>%
-      mutate(item_id = as.integer(item_id)) -> distance_coefficients_long
+      mutate(item_id = as.integer(item_id)) -> utility_coefficients_long
 
-    distance_coefficients_long
+    utility_coefficients_long
   }
 }
