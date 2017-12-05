@@ -3,8 +3,8 @@
 #' Tests for differences in mean factor loadings between top and bottom ntile
 #' within a set of covariates
 #'
-#' @param factor_df a data.frame in long format with at least three columns: "item_id", "factor" and "loading"
-#' @param covariate_df a data.frame with covariates that will join against factor_df on item_id
+#' @param factor_df a data.frame in long format with at least three columns: "item_id" or "user_id", "factor" and "loading"
+#' @param covariate_df a data.frame with covariates that will join against factor_df on the ID column
 #' @param covariates character vector of covariate names to perform the t-tests within
 #' @param ntiles how many ntiles to split the factor loadings into
 #' @export
@@ -36,12 +36,14 @@ t_test_heatmap <- function(factor_df, covariate_df, covariates, ntiles = 10) {
 #'
 #' Performs the t-tests for t_test_heatmap
 #'
-#' @param factor_df a data.frame in long format with at least three columns: "item_id", "factor" and "loading"
-#' @param covariate_df a data.frame with covariates that will join against factor_df on item_id
+#' @param factor_df a data.frame in long format with at least three columns: "item_id" or "item_id", "factor" and "loading"
+#' @param covariate_df a data.frame with covariates that will join against factor_df on the ID column
 #' @param covariates character vector of covariate names to perform the t-tests within
 #' @param ntiles how many ntiles to split the factor loadings into
 #'
 perform_t_tests <- function(factor_df, covariate_df, covariates, ntiles) {
+  id_col <- get_id_col(factor_df)
+
   # split the items into ntiles, then throw away everything but the top and bottom ntile
   factor_df %>%
     chop_off_top_bottom_loading_ntiles_by_factor(ntiles) -> items_top_bottom
@@ -51,16 +53,16 @@ perform_t_tests <- function(factor_df, covariate_df, covariates, ntiles) {
   covariate_df %>%
     model.matrix(covariate_formula, .) %>%
     as.data.frame() %>%
-    dplyr::bind_cols(covariate_df %>% select(item_id), .) -> covariate_mm
+    dplyr::bind_cols(covariate_df %>% select(one_of(id_col)), .) -> covariate_mm
 
   # take the covariates from the covariate data.frame, then recast to long
   covariate_mm %>%
-    tidyr::gather(covariate, value, -item_id) -> item_covariates_long
+    tidyr::gather(covariate, value, -one_of(id_col)) -> item_covariates_long
 
   # join factor loadings and covariates, then perform t-tests for differences
   # in mean loading between top and bottom ntile within covariate
   items_top_bottom %>%
-    left_join(item_covariates_long, by='item_id') %>%
+    left_join(item_covariates_long, by = id_col) %>%
     group_by(factor_id, covariate) %>%
     # kick out cells where there's no variation in the covariates
     filter(length(unique(value)) > 1) %>%

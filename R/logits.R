@@ -2,8 +2,8 @@
 #'
 #' Tests for differences in mean factor loadings between top and bottom ntile by running logit regressions on a set of covariates
 #'
-#' @param factor_df a data.frame in long format with at least three columns: "item_id", "factor" and "loading"
-#' @param covariate_df a data.frame with covariates that will join against factor_df on item_id
+#' @param factor_df a data.frame in long format with at least three columns: "item_id" or "user_id", "factor" and "loading"
+#' @param covariate_df a data.frame with covariates that will join against factor_df on the ID column
 #' @param covariates character vector of covariate names to be used as independent variables in the logit
 #' @param ntiles how many ntiles to split the factor loadings into
 #' @export
@@ -36,19 +36,21 @@ logit_heatmap <- function(factor_df, covariate_df, covariates, ntiles = 10) {
 #'
 #' Performs the logit estimations for logit_heatmap
 #'
-#' @param factor_df a data.frame in long format with at least three columns: "item_id", "factor" and "loading"
-#' @param covariate_df a data.frame with covariates that will join against factor_df on item_id
+#' @param factor_df a data.frame in long format with at least three columns: "item_id" or "user_id", "factor" and "loading"
+#' @param covariate_df a data.frame with covariates that will join against factor_df on the ID column
 #' @param covariates character vector of covariate names to perform the t-tests within
 #' @param ntiles how many ntiles to split the factor loadings into
 #'
 run_logits <- function(factor_df, covariate_df, covariates, ntiles) {
+  id_col <- get_id_col(factor_df)
+
   # split the items into ntiles, then throw away everything but the top and bottom ntile
   factor_df %>%
     chop_off_top_bottom_loading_ntiles_by_factor(ntiles) -> items_top_bottom
 
   # join factor loadings and covariates, then perform logits for membership in the top ntile
   items_top_bottom %>%
-    left_join(covariate_df, by='item_id') %>%
+    left_join(covariate_df, by = id_col) %>%
     group_by(factor_id) %>%
     # estimates are top ntile - bottom ntile
     do(logit_predict_top_ntile(.data, covariates)) %>%
