@@ -79,3 +79,17 @@ get_utility_components <- function(component, data_dir, iteration = NULL, shape 
     utility_coefficients_long
   }
 }
+
+#' Parse the options the bemp model was estimated with given a directory name
+#'
+#' @param label the label of the bemp model, often the directory name under which it is saved
+#' @return tibble with parameter:value pairs
+#' @export
+#'
+parse_bemp_label <- function(description) {
+  tibble(parameter_keyvals = description) %>%
+    tidyr::separate_rows(parameter_keyvals, sep = '-') %>%
+    mutate(value = stringi::stri_reverse(stringr::str_match(stringi::stri_reverse(parameter_keyvals), '(^[0-9\\.]+)')[, 2])) %>%
+    mutate(parameter = stringi::stri_reverse(stringr::str_replace(stringi::stri_reverse(parameter_keyvals), '(^[0-9\\.]+)', ''))) %>%
+    select(parameter, value)
+}
