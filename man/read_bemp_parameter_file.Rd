@@ -12,7 +12,7 @@ read_bemp_parameter_file(parameter_name, moment = "mean", data_dir,
 
 \item{moment}{the moment of the parameter to be read in, either "mean" or "std"}
 
-\item{data_dir}{the directory in which the parameter tsv files reside}
+\item{data_dir}{the directory in which the results of the BEMP model run reside}
 
 \item{iteration}{integer: the iteration at which to evaluate the parameters}
 

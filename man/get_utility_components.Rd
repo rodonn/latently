@@ -10,7 +10,7 @@ get_utility_components(component, data_dir, iteration = NULL,
 \arguments{
 \item{component}{character: either "latent_factors" or "distance"}
 
-\item{data_dir}{the directory in which the parameter tsv files reside}
+\item{data_dir}{the directory in which the results of the BEMP model run reside}
 
 \item{iteration}{integer: the iteration at which to evaluate the parameters}
 

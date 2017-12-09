@@ -2,7 +2,7 @@
 #'
 #' @param parameter_name the (character) name of the parameter to be read in, e.g. "alpha" for item factor loadings
 #' @param moment the moment of the parameter to be read in, either "mean" or "std"
-#' @param data_dir the directory in which the parameter tsv files reside
+#' @param data_dir the directory in which the results of the BEMP model run reside
 #' @param iteration integer: the iteration at which to evaluate the parameters
 #' @param shape character: whether to return the parameters in 'long' or 'wide' format
 #'
@@ -46,7 +46,7 @@ factor_label_to_id <- function(factor_label) {
 #' Extract utility components from the bemp output
 #'
 #' @param component character: either "latent_factors" or "distance"
-#' @param data_dir the directory in which the parameter tsv files reside
+#' @param data_dir the directory in which the results of the BEMP model run reside
 #' @param iteration integer: the iteration at which to evaluate the parameters
 #' @param shape "matrix" if the raw user x item coefficient matrix should be returned, "long" if the coefficients are to be returned as a tidy (long) data.frame
 #' @export
@@ -92,4 +92,33 @@ parse_bemp_label <- function(description) {
     mutate(value = stringi::stri_reverse(stringr::str_match(stringi::stri_reverse(parameter_keyvals), '(^[0-9\\.]+)')[, 2])) %>%
     mutate(parameter = stringi::stri_reverse(stringr::str_replace(stringi::stri_reverse(parameter_keyvals), '(^[0-9\\.]+)', ''))) %>%
     select(parameter, value)
+}
+
+#' Get BEMP performance measures
+#'
+#' @param data_dir the directory in which the results of the BEMP model run reside
+#' @return a tibble with the following columns:
+#' \itemize{
+#'   \item iteration
+#'   \item duration_seconds
+#'   \item log_likelihood
+#'   \item accuracy: the fraction of correctly classified instances.
+#'   \item \eqn{precision_i}: the fraction of instances where we correctly declared \eqn{i} out of all instances where the algorithm declared \eqn{i} (then I take the average across all \eqn{i})
+#'   \item recall: the fraction of instances where we correctly declared \eqn{i} out of all of the cases where the true of choice was \eqn{i} (also averaged across all \eqn{i})
+#'   \item F1-score: defined according to the formula \eqn{f1_score = 2 * precision * recall / (precision + recall)}
+#'   \item total_instances
+#' }
+#' @export
+#'
+get_bemp_performance_measures <- function(data_dir) {
+  datasets <- c('train', 'test', 'valid')
+
+  datasets %>%
+    purrr::map_dfr(~fread(file.path(data_dir, paste(.x, 'tsv', sep = '.')),
+                          sep = '\t',
+                          col.names = c('iteration', 'duration_seconds',
+                                        'log_likelihood', 'accuracy',
+                                        'precision', 'recall',
+                                        'f1score', 'total_instances')) %>%
+                     mutate(dataset = .x))
 }
