@@ -122,3 +122,30 @@ get_bemp_performance_measures <- function(data_dir) {
                                         'f1score', 'total_instances')) %>%
                      mutate(dataset = .x))
 }
+
+
+#' Get pre-computed inner products for the BEMP model
+#'
+#' @param model_path the directory in which the results of the BEMP model run reside
+#' @param iteration the iteration
+#' @return for each `user_id` - `item_id` combination
+#' \itemize{
+#'   \item alpha1 = lambda0_i + theta_u * alpha_i + obsItem_u * obsItem_i
+#'   \item alpha2 = lambda0_i + theta_u * alpha_i + obsItem_u * obsItem_i + mu_i * delta_w (the average delta_w across all w)
+#'   \item eta = gamma_u * beta_i
+#' }
+#' @export
+#'
+get_bemp_inner_products <- function(model_path, iteration) {
+  file_name <- file.path(model_path, paste0('param_innerProducts_it', iteration))
+
+  if(!file.exists(file_name)) {
+    stop('No pre-computed inner products exist for that model and that iteration.')
+  }
+
+  df <- fread(file_name,
+              sep = '\t',
+              col.names = c('user_id', 'item_id', 'alpha1', 'alpha2', 'eta'))
+
+  df
+}

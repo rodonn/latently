@@ -2,6 +2,7 @@
 
 export(chop_off_top_bottom_ntiles)
 export(frequency_normalize_pfmul_loadings)
+export(get_bemp_inner_products)
 export(get_bemp_performance_measures)
 export(get_utility_components)
 export(logit_heatmap)
