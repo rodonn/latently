@@ -196,6 +196,7 @@ get_bemp_model_internals <- function(model_path, iteration) {
                            by = c('session_id', 'item_id'), all.x = TRUE)
   obs_price_train[is.na(rating), rating := 0]
   obs_price_train[, rating := as.logical(rating)]
+  setnames(obs_price_train, 'rating', 'chosen')
 
   ip <- merge(ip,
               obs_price_train,
@@ -206,7 +207,7 @@ get_bemp_model_internals <- function(model_path, iteration) {
   ip[, choice_prob := exp(utility) / sum(exp(utility)), .(session_id)]
 
   setcolorder(ip, c('session_id', 'user_id', 'item_id', 'alpha1', 'alpha2',
-                    'eta', 'distance', 'chosen = rating', 'utility', 'choice_prob'))
+                    'eta', 'distance', 'chosen', 'utility', 'choice_prob'))
 
   ip
 }
