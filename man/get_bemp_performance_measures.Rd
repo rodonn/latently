@@ -4,10 +4,10 @@
 \alias{get_bemp_performance_measures}
 \title{Get BEMP performance measures}
 \usage{
-get_bemp_performance_measures(data_dir)
+get_bemp_performance_measures(model_path)
 }
 \arguments{
-\item{data_dir}{the directory in which the results of the BEMP model run reside}
+\item{model_path}{the directory in which the results of the BEMP model run reside}
 }
 \value{
 a tibble with the following columns:

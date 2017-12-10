@@ -96,7 +96,7 @@ parse_bemp_label <- function(description) {
 
 #' Get BEMP performance measures
 #'
-#' @param data_dir the directory in which the results of the BEMP model run reside
+#' @param model_path the directory in which the results of the BEMP model run reside
 #' @return a tibble with the following columns:
 #' \itemize{
 #'   \item iteration
@@ -110,11 +110,11 @@ parse_bemp_label <- function(description) {
 #' }
 #' @export
 #'
-get_bemp_performance_measures <- function(data_dir) {
+get_bemp_performance_measures <- function(model_path) {
   datasets <- c('train', 'test', 'valid')
 
   datasets %>%
-    purrr::map_dfr(~fread(file.path(data_dir, paste(.x, 'tsv', sep = '.')),
+    purrr::map_dfr(~fread(file.path(model_path, paste(.x, 'tsv', sep = '.')),
                           sep = '\t',
                           col.names = c('iteration', 'duration_seconds',
                                         'log_likelihood', 'accuracy',
