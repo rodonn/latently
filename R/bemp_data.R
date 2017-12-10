@@ -49,6 +49,7 @@ factor_label_to_id <- function(factor_label) {
 #' @param data_dir the directory in which the results of the BEMP model run reside
 #' @param iteration integer: the iteration at which to evaluate the parameters
 #' @param shape "matrix" if the raw user x item coefficient matrix should be returned, "long" if the coefficients are to be returned as a tidy (long) data.frame
+#' @import tidyr
 #' @export
 #'
 get_utility_components <- function(component, data_dir, iteration = NULL, shape = 'long') {
@@ -84,6 +85,8 @@ get_utility_components <- function(component, data_dir, iteration = NULL, shape 
 #'
 #' @param label the label of the bemp model, often the directory name under which it is saved
 #' @return tibble with parameter:value pairs
+#' @import tidyr
+#' @import dplyr
 #' @export
 #'
 parse_bemp_label <- function(description) {
@@ -108,6 +111,8 @@ parse_bemp_label <- function(description) {
 #'   \item F1-score: defined according to the formula \eqn{f1_score = 2 * precision * recall / (precision + recall)}
 #'   \item total_instances
 #' }
+#' @import data.table
+#' @import purrr
 #' @export
 #'
 get_bemp_performance_measures <- function(model_path) {
@@ -134,6 +139,7 @@ get_bemp_performance_measures <- function(model_path) {
 #'   \item alpha2 = lambda0_i + theta_u * alpha_i + obsItem_u * obsItem_i + mu_i * delta_w (the average delta_w across all w)
 #'   \item eta = gamma_u * beta_i
 #' }
+#' @import data.table
 #' @export
 #'
 get_bemp_inner_products <- function(model_path, iteration) {
@@ -167,6 +173,7 @@ get_bemp_inner_products <- function(model_path, iteration) {
 #'   \item utility utility unter the model: alpha2 - eta * log(distance)
 #'   \item choice_prob choice probability under the model
 #' }
+#' @import data.table
 #' @export
 #'
 get_bemp_model_internals <- function(model_path, iteration) {
