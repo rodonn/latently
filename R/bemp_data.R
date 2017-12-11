@@ -113,6 +113,19 @@ parse_bemp_logfile <- function(data_dir) {
     purrr::modify_depth(.depth = 1, purrr::flatten)
 }
 
+#' Get names of the BEMP ICvars
+#'
+#' @param model_path
+#' @export
+#'
+get_icvar_names <- function(model_path) {
+  obs_item_path <- file.path(model_path, '..', '..', 'obsItem.tsv')
+  obs_item_colnames <- unname(unlist(data.table::fread(obs_item_path,
+                                                       nrows = 1,
+                                                       header = FALSE)))
+  obs_item_colnames[!obs_item_colnames %in% c('location_id')]
+}
+
 
 #' Get BEMP performance measures
 #'
