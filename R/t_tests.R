@@ -59,6 +59,15 @@ perform_t_tests <- function(factor_df, covariate_df, covariates, ntiles) {
   covariate_mm %>%
     tidyr::gather(covariate, value, -one_of(id_col)) -> item_covariates_long
 
+  item_covariates_long %>%
+    filter(is.na(value)) %>%
+    distinct(covariate) %>%
+    pull(covariate) -> covariates_with_missings
+
+  if(length(covariates_with_missings) > 0) {
+    warning('The following covariates have missings: ', paste(covariates_with_missings, collapse = ', '))
+  }
+
   # join factor loadings and covariates, then perform t-tests for differences
   # in mean loading between top and bottom ntile within covariate
   items_top_bottom %>%
