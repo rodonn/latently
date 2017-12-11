@@ -80,21 +80,39 @@ get_utility_components <- function(component, data_dir, iteration = NULL, shape 
   }
 }
 
-#' Parse the options the bemp model was estimated with given a directory name
+
+#' Parse the BEMP logfile
 #'
-#' @param label the label of the bemp model, often the directory name under which it is saved
-#' @return tibble with parameter:value pairs
-#' @import tidyr
-#' @import dplyr
+#' @param data_dir the directory in which the results of the BEMP model run reside
+#' @return nested list
 #' @export
 #'
-parse_bemp_label <- function(description) {
-  tibble(parameter_keyvals = description) %>%
-    tidyr::separate_rows(parameter_keyvals, sep = '-') %>%
-    mutate(value = stringi::stri_reverse(stringr::str_match(stringi::stri_reverse(parameter_keyvals), '(^[0-9\\.]+)')[, 2])) %>%
-    mutate(parameter = stringi::stri_reverse(stringr::str_replace(stringi::stri_reverse(parameter_keyvals), '(^[0-9\\.]+)', ''))) %>%
-    select(parameter, value)
+parse_bemp_logfile <- function(data_dir) {
+  ss <- readLines(file.path(model_path, 'log.txt'))
+
+  # reformat and indent the log file so it adheres to yaml format
+
+  # indentation
+  ss <- stringr::str_replace_all(ss, "\\+", "- ")
+  ss <- stringr::str_replace_all(ss, "    ", "      - ")
+  ss <- stringr::str_replace_all(ss, "   -", "    - ")
+  ss <- stringr::str_replace_all(ss, "=", " : ")
+
+  # in yaml a line can either have a value or open a nest but not both. Hack around that
+  ss <- stringr::str_replace(ss, "ICgroups : [0-9]+", "ICgroups :")
+  ICgroups <- stringr::str_match(ss, "    - group ([0-9]+): ([0-9]+-[0-9]+)")
+  ss <- ifelse(!is.na(ICgroups[,1]), paste0("    - group_", ICgroups[, 2], ' :\n       -  ICidx: ', ICgroups[, 3]), ss)
+
+  # collapse into a single string, then parse using yaml package
+  ss <- paste(ss, collapse = "\n")
+  parsed <- yaml::yaml.load(ss)
+
+  # FIXME: This isn't quite right. The lowest level of the tree isn't flattened
+  parsed %>%
+    purrr::modify_depth(.depth = 2, ~purrr::map_if(.x, is.list, purrr::flatten)) %>%
+    purrr::modify_depth(.depth = 1, purrr::flatten)
 }
+
 
 #' Get BEMP performance measures
 #'
