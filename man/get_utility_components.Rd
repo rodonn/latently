@@ -4,13 +4,13 @@
 \alias{get_utility_components}
 \title{Extract utility components from the bemp output}
 \usage{
-get_utility_components(component, data_dir, iteration = NULL,
+get_utility_components(component, model_path, iteration = NULL,
   shape = "long")
 }
 \arguments{
 \item{component}{character: either "latent_factors" or "distance"}
 
-\item{data_dir}{the directory in which the results of the BEMP model run reside}
+\item{model_path}{the directory in which the results of the BEMP model run reside}
 
 \item{iteration}{integer: the iteration at which to evaluate the parameters}
 

@@ -2,13 +2,13 @@
 #'
 #' @param parameter_name the (character) name of the parameter to be read in, e.g. "alpha" for item factor loadings
 #' @param moment the moment of the parameter to be read in, either "mean" or "std"
-#' @param data_dir the directory in which the results of the BEMP model run reside
+#' @param model_path the directory in which the results of the BEMP model run reside
 #' @param iteration integer: the iteration at which to evaluate the parameters
 #' @param shape character: whether to return the parameters in 'long' or 'wide' format
 #'
 #' @export
 read_bemp_parameter_file <- function(parameter_name, moment = 'mean',
-                                      data_dir, iteration = NULL, shape = 'long') {
+                                     model_path, iteration = NULL, shape = 'long') {
   # read in the tsv file
   if(!is.null(iteration)) {
     iteration <- paste0('it', iteration)
@@ -16,7 +16,7 @@ read_bemp_parameter_file <- function(parameter_name, moment = 'mean',
 
   file_name_components <- c('param', parameter_name, iteration, moment)
   file_name <- paste0(paste(file_name_components, collapse = '_'), '.tsv')
-  parameter_wide <- data.table::fread(file.path(data_dir, file_name))
+  parameter_wide <- data.table::fread(file.path(model_path, file_name))
 
   # set column names
   unit_id_name <- ifelse(parameter_name %in% c('alpha', 'beta'), 'item_id', 'user_id')
@@ -46,12 +46,12 @@ factor_label_to_id <- function(factor_label) {
 #' Extract utility components from the bemp output
 #'
 #' @param component character: either "latent_factors" or "distance"
-#' @param data_dir the directory in which the results of the BEMP model run reside
+#' @param model_path the directory in which the results of the BEMP model run reside
 #' @param iteration integer: the iteration at which to evaluate the parameters
 #' @param shape "matrix" if the raw user x item coefficient matrix should be returned, "long" if the coefficients are to be returned as a tidy (long) data.frame
 #' @export
 #'
-get_utility_components <- function(component, data_dir, iteration = NULL, shape = 'long') {
+get_utility_components <- function(component, model_path, iteration = NULL, shape = 'long') {
   if(component == 'latent_factors') {
     item_component_parameter_name <- 'alpha'
     user_component_parameter_name <- 'theta'
@@ -60,8 +60,8 @@ get_utility_components <- function(component, data_dir, iteration = NULL, shape 
     user_component_parameter_name <- 'gamma'
   }
   # read in the item and user loadings on the component factors
-  item_component_wide <- read_bemp_parameter_file(item_component_parameter_name, 'mean', data_dir, iteration, shape = 'wide')
-  user_component_wide <- read_bemp_parameter_file(user_component_parameter_name, 'mean', data_dir, iteration, shape = 'wide')
+  item_component_wide <- read_bemp_parameter_file(item_component_parameter_name, 'mean', model_path, iteration, shape = 'wide')
+  user_component_wide <- read_bemp_parameter_file(user_component_parameter_name, 'mean', model_path, iteration, shape = 'wide')
 
   # compute the matrix of utility coefficients as the inner product of the item and user loading matrixes
   utility_coefficient_matrix <- as.matrix(user_component_wide[, c(-1)]) %*% t(as.matrix(item_component_wide[, c(-1)]))
@@ -83,11 +83,11 @@ get_utility_components <- function(component, data_dir, iteration = NULL, shape 
 
 #' Parse the BEMP logfile
 #'
-#' @param data_dir the directory in which the results of the BEMP model run reside
+#' @param model_path the directory in which the results of the BEMP model run reside
 #' @return nested list
 #' @export
 #'
-parse_bemp_logfile <- function(data_dir) {
+parse_bemp_logfile <- function(model_path) {
   ss <- readLines(file.path(model_path, 'log.txt'))
 
   # reformat and indent the log file so it adheres to yaml format

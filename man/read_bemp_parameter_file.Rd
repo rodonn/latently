@@ -4,7 +4,7 @@
 \alias{read_bemp_parameter_file}
 \title{Read in bemp parameter file}
 \usage{
-read_bemp_parameter_file(parameter_name, moment = "mean", data_dir,
+read_bemp_parameter_file(parameter_name, moment = "mean", model_path,
   iteration = NULL, shape = "long")
 }
 \arguments{
@@ -12,7 +12,7 @@ read_bemp_parameter_file(parameter_name, moment = "mean", data_dir,
 
 \item{moment}{the moment of the parameter to be read in, either "mean" or "std"}
 
-\item{data_dir}{the directory in which the results of the BEMP model run reside}
+\item{model_path}{the directory in which the results of the BEMP model run reside}
 
 \item{iteration}{integer: the iteration at which to evaluate the parameters}
 

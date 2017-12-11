@@ -4,10 +4,10 @@
 \alias{parse_bemp_logfile}
 \title{Parse the BEMP logfile}
 \usage{
-parse_bemp_logfile(data_dir)
+parse_bemp_logfile(model_path)
 }
 \arguments{
-\item{data_dir}{the directory in which the results of the BEMP model run reside}
+\item{model_path}{the directory in which the results of the BEMP model run reside}
 }
 \value{
 nested list
