@@ -49,11 +49,11 @@ perform_t_tests <- function(factor_df, covariate_df, covariates, ntiles) {
     chop_off_top_bottom_loading_ntiles_by_factor(ntiles) -> items_top_bottom
 
   # take any factor variables among the covariates and one-hot-encode them
-  covariate_formula <- as.formula(paste0('~ ', paste(covariates, collapse = '+'), ' -1'))
-  covariate_df %>%
-    model.matrix(covariate_formula, .) %>%
-    as.data.frame() %>%
-    dplyr::bind_cols(covariate_df %>% select(one_of(id_col)), .) -> covariate_mm
+  covariate_formula <- as.formula(paste0('~ ', paste(c(id_col, covariates), collapse = '+'), ' -1'))
+
+  # we need this construction because plain model.matrix will drop observations with missing values
+  model.matrix(covariate_formula, model.frame(~ ., data = covariate_df, na.action = na.pass)) %>%
+    as.data.frame() -> covariate_mm
 
   # take the covariates from the covariate data.frame, then recast to long
   covariate_mm %>%
