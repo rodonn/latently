@@ -49,7 +49,6 @@ factor_label_to_id <- function(factor_label) {
 #' @param data_dir the directory in which the results of the BEMP model run reside
 #' @param iteration integer: the iteration at which to evaluate the parameters
 #' @param shape "matrix" if the raw user x item coefficient matrix should be returned, "long" if the coefficients are to be returned as a tidy (long) data.frame
-#' @import tidyr
 #' @export
 #'
 get_utility_components <- function(component, data_dir, iteration = NULL, shape = 'long') {
@@ -112,7 +111,6 @@ parse_bemp_label <- function(description) {
 #'   \item total_instances
 #' }
 #' @import data.table
-#' @import purrr
 #' @export
 #'
 get_bemp_performance_measures <- function(model_path) {
