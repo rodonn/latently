@@ -133,7 +133,7 @@ parse_bemp_logfile <- function(model_path) {
 
 #' Get names of the BEMP ICvars
 #'
-#' @param model_path
+#' @param model_path the directory in which the results of the BEMP model run reside
 #' @export
 #'
 get_icvar_names <- function(model_path) {

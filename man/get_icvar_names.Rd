@@ -6,6 +6,9 @@
 \usage{
 get_icvar_names(model_path)
 }
+\arguments{
+\item{model_path}{the directory in which the results of the BEMP model run reside}
+}
 \description{
 Get names of the BEMP ICvars
 }
