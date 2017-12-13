@@ -33,6 +33,24 @@ read_bemp_parameter_file <- function(parameter_name, moment = 'mean',
   }
 }
 
+#' create a sequence of factor labels
+#'
+#' @param length_out length of the sequence
+#' @param sequence_type either "robust" (lowercase, underscored and zero-padded) or
+#'        "pretty" (to be used in plotting)
+#'
+#' @export
+factor_sequence <- function(length_out, sequence_type = 'robust') {
+  if(sequence_type == 'robust') {
+    paste('factor',
+          stringr::str_pad(seq_len(length_out), 2, pad = '0'),
+          sep = '_')
+  } else if(sequence_type == 'pretty') {
+    paste('Factor',
+          seq_len(length_out),
+          sep = ' ')
+  }
+}
 
 #' strip a robust factor label to its id
 #'
