@@ -4,12 +4,15 @@
 \alias{get_bemp_inner_products}
 \title{Get pre-computed inner products for the BEMP model}
 \usage{
-get_bemp_inner_products(model_path, iteration)
+get_bemp_inner_products(model_path, iteration, cols = c("user_id", "item_id",
+  "alpha1", "alpha2", "eta"))
 }
 \arguments{
 \item{model_path}{the directory in which the results of the BEMP model run reside}
 
 \item{iteration}{the iteration}
+
+\item{the}{columns to return. All columns of param_innerProducts.tsv by default but can be narrowed to save on memory}
 }
 \value{
 for each `user_id` - `item_id` combination

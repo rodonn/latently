@@ -4,7 +4,8 @@
 \alias{get_bemp_model_internals}
 \title{Get the BEMP model internals}
 \usage{
-get_bemp_model_internals(model_path, iteration)
+get_bemp_model_internals(model_path, iteration, cols = c("session_id",
+  "user_id", "item_id", "utility"))
 }
 \arguments{
 \item{model_path}{the directory in which the results of the BEMP model run reside}

@@ -180,6 +180,7 @@ get_bemp_performance_measures <- function(model_path) {
 #'
 #' @param model_path the directory in which the results of the BEMP model run reside
 #' @param iteration the iteration
+#' @param the columns to return. All columns of param_innerProducts.tsv by default but can be narrowed to save on memory
 #' @return for each `user_id` - `item_id` combination
 #' \itemize{
 #'   \item alpha1 = lambda0_i + theta_u * alpha_i + obsItem_u * obsItem_i
@@ -189,16 +190,19 @@ get_bemp_performance_measures <- function(model_path) {
 #' @import data.table
 #' @export
 #'
-get_bemp_inner_products <- function(model_path, iteration) {
+get_bemp_inner_products <- function(model_path, iteration, cols = c('user_id', 'item_id', 'alpha1', 'alpha2', 'eta')) {
   file_name <- file.path(model_path, paste0('param_innerProducts_it', iteration))
 
   if(!file.exists(file_name)) {
     stop('No pre-computed inner products exist for that model and that iteration.')
   }
 
+  column_names <- c('user_id', 'item_id', 'alpha1', 'alpha2', 'eta')
+
   df <- fread(file_name,
               sep = '\t',
-              col.names = c('user_id', 'item_id', 'alpha1', 'alpha2', 'eta'))
+              col.names = column_names[column_names %in% cols],
+              select = which(column_names %in% cols))
 
   df
 }
@@ -223,8 +227,14 @@ get_bemp_inner_products <- function(model_path, iteration) {
 #' @import data.table
 #' @export
 #'
-get_bemp_model_internals <- function(model_path, iteration) {
-  ip <- get_bemp_inner_products(model_path, iteration)
+get_bemp_model_internals <- function(model_path, iteration, cols = c('session_id', 'user_id', 'item_id', 'utility')) {
+  ip_cols <- c('user_id', 'item_id', 'alpha1', 'alpha2', 'eta')
+  get_ip_cols <- intersect(cols, ip_cols)
+  if(any(c('choice_prob', 'utility') %in% cols)) {
+    get_ip_cols <- c(get_ip_cols, 'alpha2', 'eta')
+  }
+
+  ip <- get_bemp_inner_products(model_path, iteration, cols = get_ip_cols)
 
   train <- data.table::fread(file.path(model_path, '..', '..', 'train.tsv'))
   setnames(train, 'location_id', 'item_id')
@@ -232,7 +242,7 @@ get_bemp_model_internals <- function(model_path, iteration) {
   obs_price <- data.table::fread(file.path(model_path, '..', '..', 'obsPrice.tsv'))
   setnames(obs_price, 'location_id', 'item_id')
 
-  # merge the user_ids for each session
+  # merge in all session_ids belonging to each user in the training dataset
   obs_price_train <- merge(obs_price,
                            train[, .(user_id, session_id)],
                            by = 'session_id')
@@ -245,16 +255,18 @@ get_bemp_model_internals <- function(model_path, iteration) {
   obs_price_train[, rating := as.logical(rating)]
   setnames(obs_price_train, 'rating', 'chosen')
 
+  # merge in distances
   ip <- merge(ip,
               obs_price_train,
               by = c('user_id', 'item_id'))
   setkey(ip, session_id)
 
-  ip[, utility := alpha2 - eta * log(distance)]
-  ip[, choice_prob := exp(utility) / sum(exp(utility)), .(session_id)]
+  if(any(c('utility', 'choice_prob') %in% cols)) {
+    ip[, utility := alpha2 - eta * log(distance)]
+  }
+  if('choice_prob' %in% cols) {
+    ip[, choice_prob := exp(utility) / sum(exp(utility)), .(session_id)]
+  }
 
-  setcolorder(ip, c('session_id', 'user_id', 'item_id', 'alpha1', 'alpha2',
-                    'eta', 'distance', 'chosen', 'utility', 'choice_prob'))
-
-  ip
+  ip[, cols, with = FALSE]
 }
