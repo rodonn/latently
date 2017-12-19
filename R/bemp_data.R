@@ -22,7 +22,7 @@ read_bemp_parameter_file <- function(parameter_name, moment = 'mean',
   unit_id_name <-
     ifelse(parameter_name %in% c('alpha', 'beta'), 'item_id',
     ifelse(parameter_name %in% c('delta'),         'week_id',
-                                                   'user_id')
+                                                   'user_id'))
 
   factor_names <- factor_sequence(ncol(parameter_wide) - 2)
   colnames(parameter_wide) <- c('row', unit_id_name, factor_names)
