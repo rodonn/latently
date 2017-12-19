@@ -191,7 +191,7 @@ get_bemp_performance_measures <- function(model_path) {
 #' @export
 #'
 get_bemp_inner_products <- function(model_path, iteration, cols = c('user_id', 'item_id', 'alpha1', 'alpha2', 'eta')) {
-  file_name <- file.path(model_path, paste0('param_innerProducts_it', iteration))
+  file_name <- file.path(model_path, paste0('param_innerProducts_it', iteration, '.tsv'))
 
   if(!file.exists(file_name)) {
     stop('No pre-computed inner products exist for that model and that iteration.')
