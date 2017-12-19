@@ -1,3 +1,18 @@
+
+ntile_names <- fread('
+ntile_value, ntile_name
+3, tercile
+4, quartile
+5, quintile
+6, sextile
+7, septile
+8, octile
+10, decile
+16, hexadecile
+20, viginitile
+100, percentile
+')
+
 #' ntile name
 #'
 #' Returns the name of an ntile, e.g. "quartile" if passed 4
@@ -5,10 +20,10 @@
 #' @param ntile an integer
 #'
 ntile_name <- function(ntile) {
-  ntile_name_out <- c(NA, NA, 'tercile', 'quartile', 'quintile', NA, NA, NA, NA, 'decile')[ntile]
+  ntile_name_out <- ntile_names[ntile == ntile_value, ntile_name][1]
   if(is.na(ntile_name_out)) {
     stop("Don't know what that ntile is called")
   } else {
-    ntile_name_out
+    return( ntile_name_out)
   }
 }
