@@ -19,7 +19,11 @@ read_bemp_parameter_file <- function(parameter_name, moment = 'mean',
   parameter_wide <- data.table::fread(file.path(model_path, file_name))
 
   # set column names
-  unit_id_name <- ifelse(parameter_name %in% c('alpha', 'beta'), 'item_id', 'user_id')
+  unit_id_name <-
+    ifelse(parameter_name %in% c('alpha', 'beta'), 'item_id',
+    ifelse(parameter_name %in% c('delta'),         'week_id',
+                                                   'user_id')
+
   factor_names <- factor_sequence(ncol(parameter_wide) - 2)
   colnames(parameter_wide) <- c('row', unit_id_name, factor_names)
   parameter_wide$row <- NULL
@@ -111,18 +115,18 @@ parse_bemp_logfile <- function(model_path) {
   # reformat and indent the log file so it adheres to yaml format
 
   # indentation
-  ss <- stringr::str_replace_all(ss, "\\+", "- ")
-  ss <- stringr::str_replace_all(ss, "    ", "      - ")
-  ss <- stringr::str_replace_all(ss, "   -", "    - ")
-  ss <- stringr::str_replace_all(ss, "=", " : ")
+  ss <- stringr::str_replace_all(ss, '\\+', '- ')
+  ss <- stringr::str_replace_all(ss, '    ', '      - ')
+  ss <- stringr::str_replace_all(ss, '   -', '    - ')
+  ss <- stringr::str_replace_all(ss, '=', ' : ')
 
   # in yaml a line can either have a value or open a nest but not both. Hack around that
-  ss <- stringr::str_replace(ss, "ICgroups : [0-9]+", "ICgroups :")
-  ICgroups <- stringr::str_match(ss, "    - group ([0-9]+): ([0-9]+-[0-9]+)")
-  ss <- ifelse(!is.na(ICgroups[,1]), paste0("    - group_", ICgroups[, 2], ' :\n       -  ICidx: ', ICgroups[, 3]), ss)
+  ss <- stringr::str_replace(ss, 'ICgroups : [0-9]+', 'ICgroups :')
+  ICgroups <- stringr::str_match(ss, '    - group ([0-9]+): ([0-9]+-[0-9]+)')
+  ss <- ifelse(!is.na(ICgroups[,1]), paste0('    - group_', ICgroups[, 2], ' :\n       -  ICidx: ', ICgroups[, 3]), ss)
 
   # collapse into a single string, then parse using yaml package
-  ss <- paste(ss, collapse = "\n")
+  ss <- paste(ss, collapse = '\n')
   parsed <- yaml::yaml.load(ss)
 
   # FIXME: This isn't quite right. The lowest level of the tree isn't flattened
@@ -211,6 +215,7 @@ get_bemp_inner_products <- function(model_path, iteration, cols = c('user_id', '
 #'
 #' @param model_path the directory in which the results of the BEMP model run reside
 #' @param iteration the iteration
+#' @param sample train, validation, test, or all to combine all three
 #' @return data.table containing
 #' \itemize{
 #'   \item session_id
@@ -227,7 +232,7 @@ get_bemp_inner_products <- function(model_path, iteration, cols = c('user_id', '
 #' @import data.table
 #' @export
 #'
-get_bemp_model_internals <- function(model_path, iteration, cols = c('session_id', 'user_id', 'item_id', 'utility')) {
+get_bemp_model_internals <- function(model_path, iteration, sample = 'all', cols = c('session_id', 'user_id', 'item_id', 'utility')) {
   ip_cols <- c('user_id', 'item_id', 'alpha1', 'alpha2', 'eta')
   get_ip_cols <- intersect(cols, ip_cols)
   if(any(c('choice_prob', 'utility') %in% cols)) {
@@ -236,29 +241,36 @@ get_bemp_model_internals <- function(model_path, iteration, cols = c('session_id
 
   ip <- get_bemp_inner_products(model_path, iteration, cols = get_ip_cols)
 
-  train <- data.table::fread(file.path(model_path, '..', '..', 'train.tsv'))
-  setnames(train, 'location_id', 'item_id')
+  samples <- c('train', 'test', 'validation')
+  if (sample == 'all') {
+    samples %>%
+      set_names(file.path(model_path, '..', '..', paste0( . ,'.tsv')), . ) %>%
+      purrr::map_dfr(data.table::fread, .id = 'sample') -> obs
+  } else if (sample %in% samples) {
+    obs <- data.table::fread(file.path(model_path, '..', '..', paste0(sample, '.tsv')))
+  } else {
+    stop('Sample must be train, validation, test, or all.')
+  }
+  data.table::setnames(obs, 'location_id', 'item_id')
 
   obs_price <- data.table::fread(file.path(model_path, '..', '..', 'obsPrice.tsv'))
   setnames(obs_price, 'location_id', 'item_id')
 
   # merge in all session_ids belonging to each user in the training dataset
-  obs_price_train <- merge(obs_price,
-                           train[, .(user_id, session_id)],
-                           by = 'session_id')
+  obs_price <- merge(obs_price,
+                     obs[, .(user_id, session_id)],
+                     by = 'session_id')
 
   # merge in actual choices (mostly for debugging)
-  obs_price_train <- merge(obs_price_train,
-                           train[, .(session_id, item_id, rating)],
-                           by = c('session_id', 'item_id'), all.x = TRUE)
-  obs_price_train[is.na(rating), rating := 0]
-  obs_price_train[, rating := as.logical(rating)]
-  setnames(obs_price_train, 'rating', 'chosen')
+  obs_price <- merge(obs_price,
+                     obs[, .(session_id, item_id, rating)],
+                     by = c('session_id', 'item_id'), all.x = TRUE)
+  obs_price[is.na(rating), rating := 0]
+  obs_price[, rating := as.logical(rating)]
+  setnames(obs_price, 'rating', 'chosen')
 
   # merge in distances
-  ip <- merge(ip,
-              obs_price_train,
-              by = c('user_id', 'item_id'))
+  ip <- merge(ip, obs_price, by = c('user_id', 'item_id'))
   setkey(ip, session_id)
 
   if(any(c('utility', 'choice_prob') %in% cols)) {
