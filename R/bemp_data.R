@@ -262,9 +262,8 @@ get_bemp_model_internals <- function(model_path, iteration, sample = 'all', cols
                      by = 'session_id')
 
   # merge in actual choices (mostly for debugging)
-  obs_price <- merge(obs_price,
-                     obs[, .(session_id, item_id, rating)],
-                     by = c('session_id', 'item_id'), all.x = TRUE)
+  obs_price <- merge(obs_price, obs,
+                     by = c('user_id', 'session_id', 'item_id'), all.x = TRUE)
   obs_price[is.na(rating), rating := 0]
   obs_price[, rating := as.logical(rating)]
   setnames(obs_price, 'rating', 'chosen')
@@ -279,6 +278,10 @@ get_bemp_model_internals <- function(model_path, iteration, sample = 'all', cols
   if('choice_prob' %in% cols) {
     ip[, choice_prob := exp(utility) / sum(exp(utility)), .(session_id)]
   }
+
+  missing_cols <- setdiff(cols, names(ip))
+  cols <- intersect(cols, names(ip))
+  warning(paste0("Columns not found: ", paste0(missing_cols, collapse = ", ")))
 
   ip[, cols, with = FALSE]
 }
