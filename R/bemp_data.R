@@ -281,7 +281,9 @@ get_bemp_model_internals <- function(model_path, iteration, sample = 'all', cols
 
   missing_cols <- setdiff(cols, names(ip))
   cols <- intersect(cols, names(ip))
-  warning(paste0("Columns not found: ", paste0(missing_cols, collapse = ", ")))
+  if (length(missing_cols) > 0){
+    warning(paste0("Columns not found: ", paste0(missing_cols, collapse = ", ")))
+  }
 
   ip[, cols, with = FALSE]
 }
