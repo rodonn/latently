@@ -263,7 +263,7 @@ get_bemp_model_internals <- function(model_path,
     if(verbose) { message(paste0('Reading in sessions for ', paste(samples, collapse = ', '), '.')) }
     samples %>%
       purrr::set_names(file.path(model_path, '..', '..', paste0( . ,'.tsv')), . ) %>%
-      purrr::map(data.table::fread) %>%
+      purrr::map(~data.table::fread(.x, verbose = verbose)) %>%
       data.table::rbindlist(idcol = 'sample') -> obs
   } else {
     stop('samples must be "train", "validation", "test", "all" or a character vector with any combination thereof.')
@@ -295,7 +295,8 @@ get_bemp_model_internals <- function(model_path,
   # distances are session-specific
   if(any(c('distance', 'utility', 'choice_prob') %in% cols)) {
     if(verbose) { message('Reading in distances.') }
-    obs_price <- data.table::fread(file.path(model_path, '..', '..', 'obsPrice.tsv'))
+    obs_price <- data.table::fread(file.path(model_path, '..', '..', 'obsPrice.tsv'),
+                                   verbose = verbose)
     setnames(obs_price, 'location_id', 'item_id')
 
     # merge in distances
