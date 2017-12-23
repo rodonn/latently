@@ -265,7 +265,6 @@ get_bemp_model_internals <- function(model_path,
       purrr::set_names(file.path(model_path, '..', '..', paste0( . ,'.tsv')), . ) %>%
       purrr::map(data.table::fread) %>%
       data.table::rbindlist(idcol = 'sample') -> obs
-    print(colnames(obs))
   } else {
     stop('samples must be "train", "validation", "test", "all" or a character vector with any combination thereof.')
   }
