@@ -216,6 +216,7 @@ get_bemp_inner_products <- function(model_path, iteration, cols = c('user_id', '
 #' @param model_path the directory in which the results of the BEMP model run reside
 #' @param iteration the iteration
 #' @param sample "train", "validation", "test", any combination thereof, or "all" as a shorthand
+#' @param verbose print messages along the way
 #' @return data.table containing
 #' \itemize{
 #'   \item session_id
@@ -235,7 +236,8 @@ get_bemp_inner_products <- function(model_path, iteration, cols = c('user_id', '
 get_bemp_model_internals <- function(model_path,
                                      iteration,
                                      samples = c('train', 'test', 'validation'),
-                                     cols = c('session_id', 'user_id', 'item_id', 'utility')) {
+                                     cols = c('sample', 'session_id', 'user_id', 'item_id', 'utility'),
+                                     verbose = FALSE) {
 
   # the columns in the inner_products.tsv file. fread will let us skip
   # reading in entire columns if they're not needed so narrow down early
@@ -245,10 +247,11 @@ get_bemp_model_internals <- function(model_path,
     get_ip_cols <- c(get_ip_cols, 'alpha2', 'eta')
   }
 
+  if(verbose) { message('Reading in inner products.') }
+  # the inner products are at the user x item level
   ip <- get_bemp_inner_products(model_path, iteration, cols = get_ip_cols)
 
-  # the inner products are at the user x item level. Read in the
-  # estimation samples and expand out to session level
+  # expand the above to the session level for all samples that are requested
   valid_samples <- c('train', 'test', 'validation')
 
   # if "all" samples are requested, replace with all samples
@@ -257,41 +260,61 @@ get_bemp_model_internals <- function(model_path,
   }
 
   if (all(samples %in% valid_samples)) {
+    if(verbose) { message(paste0('Reading in sessions for ', paste(samples, collapse = ', '), '.')) }
     samples %>%
       purrr::set_names(file.path(model_path, '..', '..', paste0( . ,'.tsv')), . ) %>%
       purrr::map(data.table::fread) %>%
       data.table::rbindlist(idcol = 'sample') -> obs
+    print(colnames(obs))
   } else {
     stop('samples must be "train", "validation", "test", "all" or a character vector with any combination thereof.')
   }
+  # recast to factor for more efficient storage
+  obs[, sample := factor(sample, levels = intersect(valid_samples, samples))]
   data.table::setnames(obs, 'location_id', 'item_id')
 
-  obs_price <- data.table::fread(file.path(model_path, '..', '..', 'obsPrice.tsv'))
-  setnames(obs_price, 'location_id', 'item_id')
+  # the above only contain the _chosen_ items in each session. So join in session_ids
+  if(verbose) { message('Joining in session_ids') }
+  ip <- merge(ip,
+              obs[, .(user_id, session_id, sample)],
+              by = c('user_id'),
+              allow.cartesian = TRUE)
+  setkey(ip, session_id)
 
-  # merge in all session_ids belonging to each user in the samples dataset
-  obs_price <- merge(obs_price,
-                     obs[, .(user_id, session_id)],
-                     by = 'session_id')
-
-  # merge in actual choices (mostly for debugging)
-  obs_price <- merge(obs_price, obs,
-                     by = c('user_id', 'session_id', 'item_id'), all.x = TRUE)
-  obs_price[is.na(rating), rating := 0]
+  # ... then join again to get choices
+  if(verbose) { message('Joining in choices.') }
+  obs_price <- merge(ip,
+                     obs[, .(session_id, item_id, rating)],
+                     by = c('session_id', 'item_id'),
+                     all.x = TRUE)
+  obs_price[, rating := dplyr::coalesce(rating, 0L)]
   obs_price[, rating := as.logical(rating)]
   setnames(obs_price, 'rating', 'chosen')
 
-  # merge in distances
-  ip <- merge(ip, obs_price, by = c('user_id', 'item_id'))
-  setkey(ip, session_id)
+
+  # DISTANCES
+  # distances are session-specific
+  if(any(c('distance', 'utility', 'choice_prob') %in% cols)) {
+    if(verbose) { message('Reading in distances.') }
+    obs_price <- data.table::fread(file.path(model_path, '..', '..', 'obsPrice.tsv'))
+    setnames(obs_price, 'location_id', 'item_id')
+
+    # merge in distances
+    if(verbose) { message('Joining in distances.') }
+    ip <- merge(ip, obs_price, by = c('session_id', 'item_id'))
+  }
 
   if(any(c('utility', 'choice_prob') %in% cols)) {
+    if(verbose) { message('Calculating utilities.') }
     ip[, utility := alpha2 - eta * log(distance)]
   }
+
   if('choice_prob' %in% cols) {
+    if(verbose) { message('Calculating choice probabilities.') }
     ip[, choice_prob := exp(utility) / sum(exp(utility)), .(session_id)]
   }
 
+  # return only the requested columns
   missing_cols <- setdiff(cols, names(ip))
   cols <- intersect(cols, names(ip))
   if (length(missing_cols) > 0){
