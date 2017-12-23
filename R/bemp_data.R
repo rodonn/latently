@@ -215,7 +215,7 @@ get_bemp_inner_products <- function(model_path, iteration, cols = c('user_id', '
 #'
 #' @param model_path the directory in which the results of the BEMP model run reside
 #' @param iteration the iteration
-#' @param sample train, validation, test, or all to combine all three
+#' @param sample "train", "validation", "test", any combination thereof, or "all" as a shorthand
 #' @return data.table containing
 #' \itemize{
 #'   \item session_id
@@ -232,7 +232,13 @@ get_bemp_inner_products <- function(model_path, iteration, cols = c('user_id', '
 #' @import data.table
 #' @export
 #'
-get_bemp_model_internals <- function(model_path, iteration, sample = 'all', cols = c('session_id', 'user_id', 'item_id', 'utility')) {
+get_bemp_model_internals <- function(model_path,
+                                     iteration,
+                                     samples = c('train', 'test', 'validation'),
+                                     cols = c('session_id', 'user_id', 'item_id', 'utility')) {
+
+  # the columns in the inner_products.tsv file. fread will let us skip
+  # reading in entire columns if they're not needed so narrow down early
   ip_cols <- c('user_id', 'item_id', 'alpha1', 'alpha2', 'eta')
   get_ip_cols <- intersect(cols, ip_cols)
   if(any(c('choice_prob', 'utility') %in% cols)) {
@@ -241,22 +247,29 @@ get_bemp_model_internals <- function(model_path, iteration, sample = 'all', cols
 
   ip <- get_bemp_inner_products(model_path, iteration, cols = get_ip_cols)
 
-  samples <- c('train', 'test', 'validation')
-  if (sample == 'all') {
+  # the inner products are at the user x item level. Read in the
+  # estimation samples and expand out to session level
+  valid_samples <- c('train', 'test', 'validation')
+
+  # if "all" samples are requested, replace with all samples
+  if(samples == 'all') {
+    samples <- valid_samples
+  }
+
+  if (all(samples %in% valid_samples)) {
     samples %>%
-      set_names(file.path(model_path, '..', '..', paste0( . ,'.tsv')), . ) %>%
-      purrr::map_dfr(data.table::fread, .id = 'sample') -> obs
-  } else if (sample %in% samples) {
-    obs <- data.table::fread(file.path(model_path, '..', '..', paste0(sample, '.tsv')))
+      purrr::set_names(file.path(model_path, '..', '..', paste0( . ,'.tsv')), . ) %>%
+      purrr::map(data.table::fread) %>%
+      data.table::rbindlist(idcol = 'sample') -> obs
   } else {
-    stop('Sample must be train, validation, test, or all.')
+    stop('samples must be "train", "validation", "test", "all" or a character vector with any combination thereof.')
   }
   data.table::setnames(obs, 'location_id', 'item_id')
 
   obs_price <- data.table::fread(file.path(model_path, '..', '..', 'obsPrice.tsv'))
   setnames(obs_price, 'location_id', 'item_id')
 
-  # merge in all session_ids belonging to each user in the training dataset
+  # merge in all session_ids belonging to each user in the samples dataset
   obs_price <- merge(obs_price,
                      obs[, .(user_id, session_id)],
                      by = 'session_id')
