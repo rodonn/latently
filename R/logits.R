@@ -69,7 +69,10 @@ run_logits <- function(factor_df, covariate_df, covariates, ntiles) {
 #' @export
 #'
 logit_predict_top_ntile <- function(df, covariates) {
-  logit_formula <- as.formula(paste0('top_ntile ~ ', paste(covariates, collapse = ' + ')))
+  non_signular_covariates <- purrr::map_lgl(df[, covariates],
+                                            ~length(na.omit(unique(.x))) > 1)
+
+  logit_formula <- as.formula(paste0('top_ntile ~ ', paste(covariates[non_signular_covariates], collapse = ' + ')))
 
   logit_estimates <- glm(logit_formula,
                          data = df,
