@@ -271,6 +271,8 @@ get_bemp_model_internals <- function(model_path,
   # recast to factor for more efficient storage
   obs[, sample := factor(sample, levels = intersect(valid_samples, samples))]
   data.table::setnames(obs, 'location_id', 'item_id')
+  data.table::setnames(obs, 'rating', 'chosen')
+  obs[, chosen := as.logical(chosen)]
 
   # the above only contain the _chosen_ items in each session. So join in session_ids
   if(verbose) { message('Joining in session_ids') }
@@ -282,13 +284,11 @@ get_bemp_model_internals <- function(model_path,
 
   # ... then join again to get choices
   if(verbose) { message('Joining in choices.') }
-  obs_price <- merge(ip,
-                     obs[, .(session_id, item_id, rating)],
-                     by = c('session_id', 'item_id'),
-                     all.x = TRUE)
-  obs_price[, rating := dplyr::coalesce(rating, 0L)]
-  obs_price[, rating := as.logical(rating)]
-  setnames(obs_price, 'rating', 'chosen')
+  ip <- merge(ip,
+              obs[, .(session_id, item_id, chosen)],
+              by = c('session_id', 'item_id'),
+              all.x = TRUE)
+  ip[, chosen := dplyr::coalesce(chosen, FALSE)]
 
 
   # DISTANCES
