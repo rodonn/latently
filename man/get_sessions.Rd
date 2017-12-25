@@ -4,15 +4,13 @@
 \alias{get_sessions}
 \title{Get the session data}
 \usage{
-get_sessions(model_path, iteration, samples = c("train", "test",
-  "validation"), verbose = FALSE)
+get_sessions(data_dir, samples = c("train", "test", "validation"),
+  verbose = FALSE)
 }
 \arguments{
-\item{model_path}{the directory in which the results of the BEMP model run reside}
-
-\item{iteration}{the iteration}
-
 \item{verbose}{print messages along the way}
+
+\item{model_path}{the directory in which the raw data reside}
 
 \item{sample}{"train", "validation", "test", any combination thereof, or "all" as a shorthand}
 }

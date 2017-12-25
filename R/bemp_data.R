@@ -213,16 +213,14 @@ get_bemp_inner_products <- function(model_path, iteration, cols = c('user_id', '
 
 #' Get the session data
 #'
-#' @param model_path the directory in which the results of the BEMP model run reside
-#' @param iteration the iteration
+#' @param model_path the directory in which the raw data reside
 #' @param sample "train", "validation", "test", any combination thereof, or "all" as a shorthand
 #' @param verbose print messages along the way
 #'
 #' @import data.table
 #' @export
 #'
-get_sessions <- function(model_path,
-                         iteration,
+get_sessions <- function(data_dir,
                          samples = c('train', 'test', 'validation'),
                          verbose = FALSE) {
   # expand the above to the session level for all samples that are requested
@@ -239,7 +237,7 @@ get_sessions <- function(model_path,
 
   if(verbose) { message(paste0('Reading in sessions for ', paste(samples, collapse = ', '), '.')) }
   samples %>%
-    purrr::set_names(file.path(model_path, '..', '..', paste0( . ,'.tsv')), . ) %>%
+    purrr::set_names(file.path(data_dir, paste0( . ,'.tsv')), . ) %>%
     purrr::map(~data.table::fread(.x, verbose = verbose)) %>%
     data.table::rbindlist(idcol = 'sample') -> obs
 
@@ -294,7 +292,7 @@ get_bemp_model_internals <- function(model_path,
   # the inner products are at the user x item level
   ip <- get_bemp_inner_products(model_path, iteration, cols = get_ip_cols)
 
-  obs <- get_sessions(model_path, iteration, samples, verbose = verbose)
+  obs <- get_sessions(file.path(model_path, '..', '..'), samples, verbose = verbose)
 
   # the above only contain the _chosen_ items in each session. So join in session_ids
   if(verbose) { message('Joining in session_ids') }
