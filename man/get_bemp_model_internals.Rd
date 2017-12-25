@@ -13,6 +13,8 @@ get_bemp_model_internals(model_path, iteration, samples = c("train", "test",
 
 \item{iteration}{the iteration}
 
+\item{cols}{the columns to return. Choose only those that are necessary for a speedup}
+
 \item{verbose}{print messages along the way}
 
 \item{sample}{"train", "validation", "test", any combination thereof, or "all" as a shorthand}

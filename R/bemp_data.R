@@ -211,11 +211,54 @@ get_bemp_inner_products <- function(model_path, iteration, cols = c('user_id', '
   df
 }
 
+#' Get the session data
+#'
+#' @param model_path the directory in which the results of the BEMP model run reside
+#' @param iteration the iteration
+#' @param sample "train", "validation", "test", any combination thereof, or "all" as a shorthand
+#' @param verbose print messages along the way
+#'
+#' @import data.table
+#' @export
+#'
+get_sessions <- function(model_path,
+                         iteration,
+                         samples = c('train', 'test', 'validation'),
+                         verbose = FALSE) {
+  # expand the above to the session level for all samples that are requested
+  valid_samples <- c('train', 'test', 'validation')
+
+  # if "all" samples are requested, replace with all samples
+  if(samples == 'all') {
+    samples <- valid_samples
+  }
+
+  if (!all(samples %in% valid_samples)) {
+    stop('samples must be "train", "validation", "test", "all" or a character vector with any combination thereof.')
+  }
+
+  if(verbose) { message(paste0('Reading in sessions for ', paste(samples, collapse = ', '), '.')) }
+  samples %>%
+    purrr::set_names(file.path(model_path, '..', '..', paste0( . ,'.tsv')), . ) %>%
+    purrr::map(~data.table::fread(.x, verbose = verbose)) %>%
+    data.table::rbindlist(idcol = 'sample') -> obs
+
+  # recast to factor for more efficient storage
+  obs[, sample := factor(sample, levels = intersect(valid_samples, samples))]
+  data.table::setnames(obs, 'location_id', 'item_id')
+  data.table::setnames(obs, 'rating', 'chosen')
+  obs[, chosen := as.logical(chosen)]
+
+  obs
+}
+
+
 #' Get the BEMP model internals
 #'
 #' @param model_path the directory in which the results of the BEMP model run reside
 #' @param iteration the iteration
 #' @param sample "train", "validation", "test", any combination thereof, or "all" as a shorthand
+#' @param cols the columns to return. Choose only those that are necessary for a speedup
 #' @param verbose print messages along the way
 #' @return data.table containing
 #' \itemize{
@@ -251,28 +294,7 @@ get_bemp_model_internals <- function(model_path,
   # the inner products are at the user x item level
   ip <- get_bemp_inner_products(model_path, iteration, cols = get_ip_cols)
 
-  # expand the above to the session level for all samples that are requested
-  valid_samples <- c('train', 'test', 'validation')
-
-  # if "all" samples are requested, replace with all samples
-  if(samples == 'all') {
-    samples <- valid_samples
-  }
-
-  if (all(samples %in% valid_samples)) {
-    if(verbose) { message(paste0('Reading in sessions for ', paste(samples, collapse = ', '), '.')) }
-    samples %>%
-      purrr::set_names(file.path(model_path, '..', '..', paste0( . ,'.tsv')), . ) %>%
-      purrr::map(~data.table::fread(.x, verbose = verbose)) %>%
-      data.table::rbindlist(idcol = 'sample') -> obs
-  } else {
-    stop('samples must be "train", "validation", "test", "all" or a character vector with any combination thereof.')
-  }
-  # recast to factor for more efficient storage
-  obs[, sample := factor(sample, levels = intersect(valid_samples, samples))]
-  data.table::setnames(obs, 'location_id', 'item_id')
-  data.table::setnames(obs, 'rating', 'chosen')
-  obs[, chosen := as.logical(chosen)]
+  obs <- get_sessions(model_path, iteration, samples, verbose = verbose)
 
   # the above only contain the _chosen_ items in each session. So join in session_ids
   if(verbose) { message('Joining in session_ids') }
