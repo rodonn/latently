@@ -260,6 +260,7 @@ get_sessions <- function(data_dir,
 #' @param verbose print messages along the way
 #' @return data.table containing
 #' \itemize{
+#'   \item sample
 #'   \item session_id
 #'   \item user_id
 #'   \item item_id

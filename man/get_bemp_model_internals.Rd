@@ -22,6 +22,7 @@ get_bemp_model_internals(model_path, iteration, samples = c("train", "test",
 \value{
 data.table containing
 \itemize{
+  \item sample
   \item session_id
   \item user_id
   \item item_id
