@@ -227,12 +227,12 @@ get_sessions <- function(data_dir,
   valid_samples <- c('train', 'test', 'validation')
 
   # if "all" samples are requested, replace with all samples
-  if(samples == 'all') {
+  if(identical(samples, 'all')) {
     samples <- valid_samples
   }
 
   if (!all(samples %in% valid_samples)) {
-    stop('samples must be "train", "validation", "test", "all" or a character vector with any combination thereof.')
+    stop('samples must be "train", "validation", "test", any combination thereof, or "all" as a shorthand.')
   }
 
   if(verbose) { message(paste0('Reading in sessions for ', paste(samples, collapse = ', '), '.')) }
