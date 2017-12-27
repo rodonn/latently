@@ -115,15 +115,15 @@ parse_bemp_logfile <- function(model_path) {
   # reformat and indent the log file so it adheres to yaml format
 
   # indentation
-  ss <- stringr::str_replace_all(ss, '\\+', '- ')
-  ss <- stringr::str_replace_all(ss, '    ', '      - ')
-  ss <- stringr::str_replace_all(ss, '   -', '    - ')
+  ss <- stringr::str_replace_all(ss, '^ \\+', ' - ')
+  ss <- stringr::str_replace_all(ss, '^\\t', '      - ')
+  ss <- stringr::str_replace_all(ss, '^   -', '    - ')
   ss <- stringr::str_replace_all(ss, '=', ' : ')
 
   # in yaml a line can either have a value or open a nest but not both. Hack around that
   ss <- stringr::str_replace(ss, 'ICgroups : [0-9]+', 'ICgroups :')
   ICgroups <- stringr::str_match(ss, '    - group ([0-9]+): ([0-9]+-[0-9]+)')
-  ss <- ifelse(!is.na(ICgroups[,1]), paste0('    - group_', ICgroups[, 2], ' :\n       -  ICidx: ', ICgroups[, 3]), ss)
+  ss <- ifelse(!is.na(ICgroups[,1]), paste0('    - group_', ICgroups[, 2], ' :\n      - ICidx: ', ICgroups[, 3]), ss)
 
   # collapse into a single string, then parse using yaml package
   ss <- paste(ss, collapse = '\n')
