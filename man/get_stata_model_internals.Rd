@@ -4,12 +4,14 @@
 \alias{get_stata_model_internals}
 \title{Get the Stata model internals}
 \usage{
-get_stata_model_internals(model_path, samples = c("train", "test",
-  "validation"), cols = c("sample", "session_id", "user_id", "item_id",
-  "utility"), verbose = FALSE)
+get_stata_model_internals(predictions_file_path, input_data_path,
+  samples = c("train", "test", "validation"), cols = c("sample",
+  "session_id", "user_id", "item_id", "utility"), verbose = FALSE)
 }
 \arguments{
-\item{model_path}{the directory in which the results of the Stata model run reside}
+\item{predictions_file_path}{the path to the predictions TSV file the Stata model outputs}
+
+\item{input_data_path}{the directory in which the BEMP input data resides}
 
 \item{cols}{the columns to return. Choose only those that are necessary for a speedup}
 

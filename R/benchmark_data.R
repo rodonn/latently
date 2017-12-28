@@ -1,6 +1,7 @@
 #' Get the Stata model internals
 #'
-#' @param model_path the directory in which the results of the Stata model run reside
+#' @param predictions_file_path the path to the predictions TSV file the Stata model outputs
+#' @param input_data_path the directory in which the BEMP input data resides
 #' @param sample "train", "validation", "test", any combination thereof, or "all" as a shorthand
 #' @param cols the columns to return. Choose only those that are necessary for a speedup
 #' @param verbose print messages along the way
@@ -17,14 +18,15 @@
 #' @import data.table
 #' @export
 #'
-get_stata_model_internals <- function(model_path,
+get_stata_model_internals <- function(predictions_file_path,
+                                      input_data_path,
                                       samples = c('train', 'test', 'validation'),
                                       cols = c('sample', 'session_id', 'user_id', 'item_id', 'utility'),
                                       verbose = FALSE) {
   if(verbose) { message('Reading in predictions tsv file') }
 
   # the predictions at the session level
-  ip <- data.table::fread(file.path(model_path, 'predictions_f.tsv'),
+  ip <- data.table::fread(predictions_file_path,
                           sep = '\t',
                           colClasses = c('integer', 'integer', 'integer', 'numeric', 'numeric'))
   setkey(ip, session_id)
@@ -33,7 +35,7 @@ get_stata_model_internals <- function(model_path,
 
   # Join in which sample each of the sessions belongs to
   if(verbose) { message('Joining in sample information') }
-  obs <- get_sessions(file.path(model_path, '..', '..', '..'), samples, verbose = verbose)
+  obs <- get_sessions(input_data_path, samples, verbose = verbose)
   ip <- merge(ip,
               obs[, .(session_id, sample)],
               by = c('session_id'),
@@ -55,7 +57,7 @@ get_stata_model_internals <- function(model_path,
   # distances are session-specific
   if('distance' %in% cols) {
     if(verbose) { message('Reading in distances.') }
-    obs_price <- data.table::fread(file.path(model_path, '..', '..', '..', 'obsPrice.tsv'),
+    obs_price <- data.table::fread(file.path(input_data_path, 'obsPrice.tsv'),
                                    verbose = verbose)
     setnames(obs_price, 'location_id', 'item_id')
 
