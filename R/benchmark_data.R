@@ -37,6 +37,7 @@ get_stata_model_internals <- function(model_path,
   ip <- merge(ip,
               obs[, .(session_id, sample)],
               by = c('session_id'),
+              all.x = TRUE,
               allow.cartesian = FALSE)
 
   if('chosen' %in% cols) {
@@ -60,7 +61,10 @@ get_stata_model_internals <- function(model_path,
 
     # merge in distances
     if(verbose) { message('Joining in distances.') }
-    ip <- merge(ip, obs_price, by = c('session_id', 'item_id'))
+    ip <- merge(ip,
+                obs_price,
+                by = c('session_id', 'item_id'),
+                all.x = TRUE)
   }
 
   # return only the requested columns
