@@ -57,8 +57,7 @@ get_stata_model_internals <- function(predictions_file_path,
   # distances are session-specific
   if('distance' %in% cols) {
     if(verbose) { message('Reading in distances.') }
-    obs_price <- data.table::fread(file.path(input_data_path, 'obsPrice.tsv'),
-                                   verbose = verbose)
+    obs_price <- data.table::fread(file.path(input_data_path, 'obsPrice.tsv'))
     setnames(obs_price, 'location_id', 'item_id')
 
     # merge in distances
@@ -103,7 +102,6 @@ get_model_predictions <- function(model_type,
                                             iteration = selected_iteration,
                                             cols = selected_cols,
                                             verbose = verbose)
-    predictions[, sample :=  max(sample, na.rm=TRUE), by=.(user_id, session_id)]
   } else if (model_type == 'stata') {
     selected_cols <- c('user_id','session_id','item_id','sample',
                        'distance','chosen','utility','choice_prob','eta')

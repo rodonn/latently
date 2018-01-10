@@ -239,7 +239,7 @@ get_sessions <- function(data_dir,
   if(verbose) { message(paste0('Reading in sessions for ', paste(samples, collapse = ', '), '.')) }
   samples %>%
     purrr::set_names(file.path(data_dir, paste0( . ,'.tsv')), . ) %>%
-    purrr::map(~data.table::fread(.x, verbose = verbose)) %>%
+    purrr::map(data.table::fread) %>%
     data.table::rbindlist(idcol = 'sample') -> obs
 
   # recast to factor for more efficient storage
@@ -317,8 +317,7 @@ get_bemp_model_internals <- function(model_path,
   # distances are session-specific
   if(any(c('distance', 'utility', 'choice_prob') %in% cols)) {
     if(verbose) { message('Reading in distances.') }
-    obs_price <- data.table::fread(file.path(model_path, '..', '..', 'obsPrice.tsv'),
-                                   verbose = verbose)
+    obs_price <- data.table::fread(file.path(model_path, '..', '..', 'obsPrice.tsv'))
     setnames(obs_price, 'location_id', 'item_id')
 
     # merge in distances
