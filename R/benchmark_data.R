@@ -78,3 +78,51 @@ get_stata_model_internals <- function(predictions_file_path,
 
   ip[, cols, with = FALSE]
 }
+
+
+#' Gets predictions from bemp, stata, or other models
+#'
+#' @param model_type Can be bemp, stata, or anything else (as long as it has a predictions.tsv file)
+#' @param model_path The folder containing the outputs from the model
+#' @param input_data_path The folder that contains the bemp-style model inputs
+#' @param selected_iteration For bemp models only. Which checkpoint to use.
+#' @param verbose 
+#' @return A data.table with the predictions from the model
+#' @import data.table
+#' @export
+#'
+get_model_predictions <- function(model_type,
+                                  model_path,
+                                  input_data_path,
+                                  selected_iteration = 0,
+                                  verbose = FALSE) {
+  if (model_type == 'bemp') {
+    selected_cols <- c('user_id','session_id','item_id','sample',
+                       'distance','chosen','utility','choice_prob','eta','alpha2')
+    predictions <- get_bemp_model_internals(model_path,
+                                            iteration = selected_iteration,
+                                            cols = selected_cols,
+                                            verbose = verbose)
+    predictions[, sample :=  max(sample, na.rm=TRUE), by=.(user_id, session_id)]
+  } else if (model_type == 'stata') {
+    selected_cols <- c('user_id','session_id','item_id','sample',
+                       'distance','chosen','utility','choice_prob','eta')
+
+    predictions <- get_stata_model_internals(model_path,
+                                             input_data_path,
+                                             samples = c('train','validation','test'),
+                                             cols = selected_cols,
+                                             verbose = verbose)
+  } else {
+    ## Load any other model type's predictions, as long as it has a predictions.tsv file
+    prediction_path <- file.path(model_path, 'predictions.tsv')
+    if (file.exists(prediction_path)){
+      predictions <- fread(prediction_path)
+    } else {
+      stop(paste0('Could not find predictions.tsv file in ', model_path))
+    }
+  }
+
+  predictions
+}
+

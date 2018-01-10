@@ -211,6 +211,7 @@ get_bemp_inner_products <- function(model_path, iteration, cols = c('user_id', '
   df
 }
 
+
 #' Get the session data
 #'
 #' @param model_path the directory in which the raw data reside
@@ -343,4 +344,68 @@ get_bemp_model_internals <- function(model_path,
   }
 
   ip[, cols, with = FALSE]
+}
+
+
+#' Quickly counts the number of lines in a list of files
+#'
+#' Uses the unix wc function to count the number of lines in a list of files.
+#'
+#' @param files a vector listing the files whose line length is desired
+#' @param exclude_total when TRUE the combined total line count across all the files is excluded
+#' (by default wc returns the length of each file AND the sum of these lengths)
+#' @return A vector with the length of each file (and the sum of these lengths if exclude_total is FALSE)
+#' @import data.table
+#'
+count_lines <- function(files, exclude_total = TRUE) {
+  system2('wc', args = c('-l', files, " | awk '{print $1}'"), stdout = TRUE) %>%
+    as.integer ->
+    output
+
+  # By default, if wc is given multiple filess, it also outputs a total line count
+  output_length <- length(output)
+  if ( output_length > 1 && exclude_total) {
+    output <- output[1:(output_length-1)]
+  }
+  output
+}
+
+
+#' Returns a list of the available checkpoints for a BEMP run
+#'
+#' @param model_path the directory in which the results of the BEMP model run reside
+#' @return a data.table with all existing checkpoints (i.e. innerProduct files)
+#' for the selected run, with information from the validation set scores merged on
+#' as well as the line count of the innerProduct files, since this can help detect incomplete checkpoints
+#' which can occur if a BEMP run is interrupted or crashes.
+#' @import data.table
+#' @export
+#'
+get_bemp_checkpoints <- function(model_path) {
+  # Get the logs of validation set log likelihoods
+  validation_scores <- model_path %>%
+    get_bemp_performance_measures %>%
+    setDT %>%
+    .[dataset=='valid']
+
+  # Get the set of available inner product files
+  model_path %>%
+    list.files(pattern='param_innerProducts.*', full.names = TRUE) %>%
+    data.table(file = .) ->
+    inner_product_files
+
+  if (nrow(inner_product_files) == 0) {
+    return(NULL)
+  } 
+  # Check the number of lines in each inner product file so we can exclude partial files
+  inner_product_files[, num_rows := count_lines(file)]
+
+  # Identify the iteration number of each file
+  inner_product_files[, iteration := str_extract(file, '(?<=_it)\\d*(?=\\.tsv)') %>% as.integer]
+  # Final outputs don't have an iteration number in the file name
+  inner_product_files[is.na(iteration), iteration := validation_scores[,max(iteration)]]
+  # Merge values from the validation set
+  col_names <- c('duration_seconds', 'log_likelihood', 'accuracy', 'precision', 'recall', 'f1score')
+  inner_product_files[validation_scores, (col_names) := mget(paste0('i.',col_names)), on='iteration']
+  inner_product_files
 }
