@@ -112,7 +112,7 @@ get_model_predictions <- function(model_type,
       stop('Multiple predictions files detected, using ', predictions_file)
     }
 
-    predictions <- get_stata_model_internals(model_path,
+    predictions <- get_stata_model_internals(predictions_file,
                                              input_data_path,
                                              samples = c('train','validation','test'),
                                              cols = selected_cols,
