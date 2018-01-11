@@ -71,10 +71,10 @@ get_stata_model_internals <- function(predictions_file_path,
 
   # Price Coefficient Eta
   if('eta' %in% cols) {
-    coefs_file <- list.files(model_path, pattern = 'coefs.*\\.tsv', full.names=TRUE)
-    if (length(coefs_file) > 1) {
-      coefs_file <- coefs_file[1]
-      warning('Multiple coefficient files detected, using ', coefs_file)
+    coefficients_path <- list.files(dirname(predictions_file_path), pattern = '.*coefficients.*\\.tsv', full.names=TRUE)
+    if (length(coefficients_path) > 1) {
+      coefficients_path <- coefficients_path[1]
+      warning('Multiple coefficient files detected, using ', coefficients_path)
     }
     coefficients <- fread(coefficients_path)
     distance_coef <- coefficients[V1=='chosen:ln_distance', b]
