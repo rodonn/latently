@@ -400,7 +400,7 @@ get_bemp_checkpoints <- function(model_path) {
   inner_product_files[, num_rows := count_lines(file)]
 
   # Identify the iteration number of each file
-  inner_product_files[, iteration := str_extract(file, '(?<=_it)\\d*(?=\\.tsv)') %>% as.integer]
+  inner_product_files[, iteration := stringr::str_extract(file, '(?<=_it)\\d*(?=\\.tsv)') %>% as.integer]
   # Final outputs don't have an iteration number in the file name
   inner_product_files[is.na(iteration), iteration := validation_scores[,max(iteration)]]
   # Merge values from the validation set
