@@ -59,7 +59,7 @@ get_stata_model_internals <- function(predictions_file_path,
   if('distance' %in% cols) {
     if(verbose) { message('Reading in distances.') }
     obs_price <- data.table::fread(file.path(input_data_path, 'obsPrice.tsv'))
-    rename_if_possible(ip, 'location_id', 'item_id')
+    rename_if_possible(obs_price, 'location_id', 'item_id')
 
     # merge in distances
     if(verbose) { message('Joining in distances.') }
