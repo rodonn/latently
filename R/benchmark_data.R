@@ -106,6 +106,12 @@ get_model_predictions <- function(model_type,
     selected_cols <- c('user_id','session_id','item_id','sample',
                        'distance','chosen','utility','choice_prob','eta')
 
+    predictions_file <- list.files(model_path, pattern = 'predictions.*\\.tsv', full.names=TRUE)
+    if (length(predictions_file) > 1) {
+      predictions_file <- predictions_file[1]
+      stop('Multiple predictions files detected, using ', predictions_file)
+    }
+
     predictions <- get_stata_model_internals(model_path,
                                              input_data_path,
                                              samples = c('train','validation','test'),
