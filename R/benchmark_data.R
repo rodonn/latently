@@ -69,6 +69,18 @@ get_stata_model_internals <- function(predictions_file_path,
                 all.x = TRUE)
   }
 
+  # Price Coefficient Eta
+  if('eta' %in% cols) {
+    coefs_file <- list.files(model_path, pattern = 'coefs.*\\.tsv', full.names=TRUE)
+    if (length(coefs_file) > 1) {
+      coefs_file <- coefs_file[1]
+      warning('Multiple coefficient files detected, using ', coefs_file)
+    }
+    coefficients <- fread(coefficients_path)
+    distance_coef <- coefficients[V1=='chosen:ln_distance', b]
+    predictions[, eta := distance_coef]
+  }
+
   # return only the requested columns
   missing_cols <- setdiff(cols, names(ip))
   cols <- intersect(cols, names(ip))
@@ -110,7 +122,7 @@ get_model_predictions <- function(model_type,
     predictions_file <- list.files(model_path, pattern = 'predictions.*\\.tsv', full.names=TRUE)
     if (length(predictions_file) > 1) {
       predictions_file <- predictions_file[1]
-      stop('Multiple predictions files detected, using ', predictions_file)
+      warning('Multiple predictions files detected, using ', predictions_file)
     }
 
     predictions <- get_stata_model_internals(predictions_file,
