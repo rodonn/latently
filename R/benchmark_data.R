@@ -31,7 +31,8 @@ get_stata_model_internals <- function(predictions_file_path,
                           colClasses = c('integer', 'integer', 'integer', 'numeric', 'numeric'))
   setkey(ip, session_id)
   # harmonize naming with BEMP output
-  setnames(ip, c('pHat', 'util'), c('choice_prob', 'utility'))
+  rename_if_possible(ip, 'pHat', 'choice_prob')
+  rename_if_possible(ip, 'util', 'utility')
 
   # Join in which sample each of the sessions belongs to
   if(verbose) { message('Joining in sample information') }
@@ -58,7 +59,7 @@ get_stata_model_internals <- function(predictions_file_path,
   if('distance' %in% cols) {
     if(verbose) { message('Reading in distances.') }
     obs_price <- data.table::fread(file.path(input_data_path, 'obsPrice.tsv'))
-    setnames(obs_price, 'location_id', 'item_id')
+    rename_if_possible(ip, 'location_id', 'item_id')
 
     # merge in distances
     if(verbose) { message('Joining in distances.') }
@@ -130,3 +131,9 @@ get_model_predictions <- function(model_type,
   predictions
 }
 
+##' If there is a column named old, rename it new
+rename_if_possible <- function(dt, old, new) {
+  if (old %in% names(dt)) {
+    setnames(dt, old, new)
+  }
+}
