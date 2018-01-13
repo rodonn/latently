@@ -29,7 +29,7 @@ data.table containing
   \item alpha1 = lambda0_i + theta_u * alpha_i + obsItem_u * obsItem_i
   \item alpha2 = lambda0_i + theta_u * alpha_i + obsItem_u * obsItem_i + mu_i * delta_w (the average delta_w across all w)
   \item eta = gamma_u * beta_i
-  \item distance distance between item and user in km
+  \item distance distance between item and user. For 2017 model vintages this is straight-line distance in km and an extremely large number to make the option unavailable. For 2018 vintages this is some combination of walking and driving time.
   \item chosen whether the item was chosen
   \item utility utility unter the model: alpha2 - eta * log(distance)
   \item choice_prob choice probability under the model
