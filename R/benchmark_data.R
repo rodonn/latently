@@ -26,9 +26,8 @@ get_stata_model_internals <- function(predictions_file_path,
   if(verbose) { message('Reading in predictions tsv file') }
 
   # the predictions at the session level
-  # FIXME: these files are named CSVs but are really comma-separated
   ip <- data.table::fread(predictions_file_path,
-                          sep = ',',
+                          sep = '\t',
                           colClasses = c('integer', 'integer', 'integer', 'numeric', 'numeric'))
   setkey(ip, session_id)
   # harmonize naming with BEMP output
