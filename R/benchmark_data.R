@@ -29,8 +29,7 @@ get_stata_model_internals <- function(predictions_file_path,
   # FIXME: these files are named CSVs but are really comma-separated
   ip <- data.table::fread(predictions_file_path,
                           sep = ',',
-                          colClasses = c('integer', 'integer', 'character',
-                                         'integer', 'integer', 'numeric', 'numeric'))
+                          colClasses = c('integer', 'integer', 'integer', 'numeric', 'numeric'))
   setkey(ip, session_id)
   # harmonize naming with BEMP output
   rename_if_possible(ip, 'pHat', 'choice_prob')
