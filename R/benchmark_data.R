@@ -78,7 +78,7 @@ get_stata_model_internals <- function(predictions_file_path,
     }
     coefficients <- fread(coefficients_path)
     distance_coef <- coefficients[V1=='chosen:ln_distance', b]
-    ip[, eta := distance_coef]
+    ip[, eta := -1 * distance_coef]
   }
 
   # return only the requested columns
