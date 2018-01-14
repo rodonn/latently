@@ -37,10 +37,11 @@ get_stata_model_internals <- function(predictions_file_path,
   # Join in which sample each of the sessions belongs to
   if(verbose) { message('Joining in sample information') }
   obs <- get_sessions(input_data_path, samples, verbose = verbose)
+  # INNER JOIN the sessions in to get sample information and only those
+  # sessions from the samples that were requested
   ip <- merge(ip,
               obs[, .(session_id, sample)],
               by = c('session_id'),
-              all.x = TRUE,
               allow.cartesian = FALSE)
 
   if('chosen' %in% cols) {
