@@ -239,22 +239,12 @@ get_sessions <- function(data_dir,
   if(verbose) { message(paste0('Reading in sessions for ', paste(samples, collapse = ', '), '.')) }
   samples %>%
     purrr::set_names(file.path(data_dir, paste0( . ,'.tsv')), . ) %>%
-    purrr::map(data.table::fread) %>%
+    purrr::map(data.table::fread, col.names = c('user_id','item_id','session_id','chosen')) %>%
     data.table::rbindlist(idcol = 'sample') -> obs
 
   # recast to factor for more efficient storage
   obs[, sample := factor(sample, levels = intersect(valid_samples, samples))]
 
-  # If the input data did not have column names, assign names
-  if ('V1' %in% names(obs)) {
-    setnames(obs, c('sample','user_id','item_id','session_id','chosen'))
-  } else {
-    # Convert names into more canonical form
-    replace_name(obs, 'location_id', 'item_id')
-    replace_name(obs, 'itemId', 'item_id')
-    replace_name(obs, 'userId', 'user_id')
-    replace_name(obs, 'rating', 'chosen')
-  }
   obs[, chosen := as.logical(chosen)]
 
   obs
@@ -327,11 +317,11 @@ get_bemp_model_internals <- function(model_path,
   # distances are session-specific
   if(any(c('distance', 'utility', 'choice_prob') %in% cols)) {
     if(verbose) { message('Reading in distances.') }
-    obs_price <- data.table::fread(file.path(model_path, '..', '..', 'obsPrice.tsv'))
-    setnames(obs_price, 'location_id', 'item_id')
+    obs_price <- data.table::fread(file.path(model_path, '..', '..', 'obsPrice.tsv'),
+                                   col.names = c('item_id','session_id','distance'))
 
     # merge in distances
-    if(verbose) { message('Joining in distances.') }
+    if(verbose) { message('Joining in distances/prices.') }
     ip <- merge(ip, obs_price, by = c('session_id', 'item_id'))
   }
 
