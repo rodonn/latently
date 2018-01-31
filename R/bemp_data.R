@@ -318,6 +318,7 @@ get_bemp_model_internals <- function(model_path,
   ip <- merge(ip,
               obs[, .(session_id, item_id, chosen)],
               by = c('session_id', 'item_id'),
+              allow.cartesian = TRUE,
               all.x = TRUE)
   ip[, chosen := dplyr::coalesce(chosen, FALSE)]
 
