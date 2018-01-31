@@ -30,6 +30,8 @@ ntile_name <- function(ntile) {
 
 
 
+##' Replace name
+##'
 ##' If dt has column old_name, then rename that column new_name by reference
 ##'
 ##' @param dt a data.table
