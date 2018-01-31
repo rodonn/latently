@@ -1,5 +1,5 @@
 
-ntile_names <- fread('
+ntile_names <- data.table::fread('
 ntile_value, ntile_name
 3, tercile
 4, quartile
@@ -25,5 +25,18 @@ ntile_name <- function(ntile) {
     stop("Don't know what that ntile is called")
   } else {
     return( ntile_name_out)
+  }
+}
+
+
+
+##' If dt has column old_name, then rename that column new_name by reference
+##'
+##' @param dt a data.table
+##' @param old_name if dt has a column with this name, rename it new_name, otherwise do nothing
+##' @param new_name the new name to replace old_name
+replace_name <- function(dt, old_name, new_name) {
+  if (old_name %in% names(dt)) {
+    setnames(dt, old_name, new_name)
   }
 }

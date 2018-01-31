@@ -244,8 +244,17 @@ get_sessions <- function(data_dir,
 
   # recast to factor for more efficient storage
   obs[, sample := factor(sample, levels = intersect(valid_samples, samples))]
-  data.table::setnames(obs, 'location_id', 'item_id')
-  data.table::setnames(obs, 'rating', 'chosen')
+
+  # If the input data did not have column names, assign names
+  if ('V1' %in% names(obs)) {
+    setnames(obs, c('sample','user_id','item_id','session_id','chosen'))
+  } else {
+    # Convert names into more canonical form
+    replace_name(obs, 'location_id', 'item_id')
+    replace_name(obs, 'itemId', 'item_id')
+    replace_name(obs, 'userId', 'user_id')
+    replace_name(obs, 'rating', 'chosen')
+  }
   obs[, chosen := as.logical(chosen)]
 
   obs
